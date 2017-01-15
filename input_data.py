@@ -60,7 +60,7 @@ def get_frames_data(dirname, num_frames_per_clip=16):
 
 def read_clip_and_label(filenames, labels, batch_size, np_mean, num_frames_per_clip=16, crop_size=112):
     # lines = open(filename, 'r')
-    read_dirnames = []
+    # read_dirnames = []
     data = []
     label = []
     # batch_index = 0
@@ -77,7 +77,6 @@ def read_clip_and_label(filenames, labels, batch_size, np_mean, num_frames_per_c
     # else:
     #     # Process videos sequentially
     #     video_indices = range(start_pos, len(lines))
-    #todo: using while true ... to avoid reading the dirs with less than n frames or delete them in preprocessing step, no need since the following
     # #padding
     # for index in video_indices:
     #     if (batch_index >= batch_size):
@@ -87,7 +86,7 @@ def read_clip_and_label(filenames, labels, batch_size, np_mean, num_frames_per_c
     #     dirname = line[0]
     #     tmp_label = line[1]
     #     if not shuffle:
-    for dirname in filenames:
+    for file_idx,dirname in enumerate(filenames):
         # print("Loading a video clip from {}...".format(dirname))
         tmp_data, _ = get_frames_data(dirname, num_frames_per_clip)
         img_datas = []
@@ -106,19 +105,24 @@ def read_clip_and_label(filenames, labels, batch_size, np_mean, num_frames_per_c
                        int((img.shape[1] - crop_size) / 2):int((img.shape[1] - crop_size) / 2) + crop_size, :] - np_mean[j]
                 img_datas.append(img)
             data.append(img_datas)
+            label.append(labels[file_idx])
             # label.append(int(tmp_label))
             # batch_index = batch_index + 1
-            read_dirnames.append(dirname)
+            # read_dirnames.append(dirname)
 
     #todo: pad (duplicate) data/label if less than batch_size, here might be the reason why the low performance: data are repeated
     valid_len = len(data)
     pad_len = batch_size - valid_len
+    # it's not likely none of the data are satisfied
+    pad_data = data[-1]
+    pad_label = label[-1]
     if pad_len:
         for i in range(pad_len):
-            data.append(img_datas)
+            data.append(pad_data)
+            label.append(pad_label)
             # label.append(int(tmp_label))
 
     np_arr_data = np.array(data).astype(np.float32)
-    np_arr_label = np.array(labels).astype(np.int64)
+    np_arr_label = np.array(label).astype(np.int64)
 
     return np_arr_data, np_arr_label
