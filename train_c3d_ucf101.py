@@ -210,7 +210,7 @@ def run_training():
 
         # Create a saver for writing training checkpoints.
         saver = tf.train.Saver(weights.values() + biases.values())
-        init = tf.initialize_all_variables()
+        init = tf.global_variables_initializer()
 
     # Create a session for running Ops on the Graph.
         if FLAGS.gpu_id is not None:
@@ -231,7 +231,7 @@ def run_training():
             saver.restore(sess, model_filename)
 
         # Create summary writter
-        merged = tf.merge_all_summaries()
+        merged = tf.summary.merge_all()
         train_writer = tf.summary.FileWriter('./visual_logs/train', sess.graph)
         test_writer = tf.summary.FileWriter('./visual_logs/test', sess.graph)
         for step in xrange(FLAGS.max_steps):

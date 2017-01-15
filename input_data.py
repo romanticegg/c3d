@@ -24,7 +24,8 @@ import tensorflow as tf
 import PIL.Image as Image
 import random
 import numpy as np
-import cv2
+# import cv2
+from scipy.misc import imresize
 # import time
 import glob
 
@@ -93,11 +94,11 @@ def read_clip_and_label(filename, batch_size, start_pos=-1, num_frames_per_clip=
                 img = Image.fromarray(tmp_data[j].astype(np.uint8))
                 if (img.width > img.height):
                     scale = float(crop_size) / float(img.height)
-                    img = np.array(cv2.resize(np.array(img), (int(img.width * scale + 1), crop_size))).astype(
+                    img = np.array(imresize(np.array(img), (int(img.width * scale + 1), crop_size))).astype(
                         np.float32)
                 else:
                     scale = float(crop_size) / float(img.width)
-                    img = np.array(cv2.resize(np.array(img), (crop_size, int(img.height * scale + 1)))).astype(
+                    img = np.array(imresize(np.array(img), (crop_size, int(img.height * scale + 1)))).astype(
                         np.float32)
                 img = img[int((img.shape[0] - crop_size) / 2): int((img.shape[0] - crop_size) / 2) + crop_size,
                        int((img.shape[1] - crop_size) / 2):int((img.shape[1] - crop_size) / 2) + crop_size, :] - np_mean[j]
