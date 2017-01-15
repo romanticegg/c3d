@@ -2,3 +2,4 @@
 *.npy
 models/
 visual_logs/
+.idea/
