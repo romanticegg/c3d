@@ -318,7 +318,7 @@ def run_training():
                 print ("accuracy: " + "{:.5f}".format(acc))
                 train_writer.add_summary(summary, step)
             # evaluate the data based on all val data
-            if step % 100 == 0 or (step + 1) == FLAGS.max_steps:
+            if (step+1) % 100 == 0 or (step + 1) == FLAGS.max_steps:
                 print('Validation Data Eval:')
                 test_acc = 0
                 for test_id in range(ntestbatches):
