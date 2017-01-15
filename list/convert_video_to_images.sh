@@ -22,7 +22,7 @@ do
         if [[ ! -d "${file[@]%.avi}" ]]; then
             mkdir -p "${file[@]%.avi}"
         fi
-        ffmpeg -i "$file" -vf fps=$2 "${file[@]%.avi}"/%05d.jpg
+        ffmpeg -loglevel panic -i "$file" -vf fps=$2 "${file[@]%.avi}"/%05d.jpg
         rm "$file"
     done
 done

@@ -1,0 +1,4 @@
+*.model
+*.npy
+models/
+visual_logs/

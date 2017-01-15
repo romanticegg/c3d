@@ -32,7 +32,6 @@ CHANNELS = 3
 # Number of frames per video clip
 NUM_FRAMES_PER_CLIP = 16
 
-"-----------------------------------------------------------------------------------------------------------------------"
 
 def conv3d(name, l_input, w, b):
   return tf.nn.bias_add(
