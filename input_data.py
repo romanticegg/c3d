@@ -38,7 +38,7 @@ def get_frames_data(dirname, num_frames_per_clip=16):
     s_index = 0
 
     abs_dirname = dirname.replace('~',home_dir)
-    print('Reading File: {:s}'.format(abs_dirname))
+    # print('Reading File: {:s}'.format(abs_dirname))
 
     fullimagenames=sorted(glob.glob(os.path.join(abs_dirname,'*.{:s}'.format('jpg'))))
 
