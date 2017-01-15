@@ -45,10 +45,11 @@ def get_frames_data(dirname, num_frames_per_clip=16):
     if (len(fullimagenames) < num_frames_per_clip):
         print('{:s} does not have enough data'.format(abs_dirname))
         return [], s_index
-    else:
-        print('{:s} has {:d} files'.format(abs_dirname,len(fullimagenames)))
+
 
     startIdx = random.randint(0, len(fullimagenames) - num_frames_per_clip)
+
+    print('{:s} has {:d} files, starting:{:d}'.format(abs_dirname,len(fullimagenames), startIdx))
     selectedimagenames=fullimagenames[startIdx:startIdx+num_frames_per_clip]
     for single_filename in selectedimagenames:
         img = Image.open(single_filename)
@@ -57,36 +58,37 @@ def get_frames_data(dirname, num_frames_per_clip=16):
     return ret_arr, s_index
 
 
-def read_clip_and_label(filename, batch_size, start_pos=-1, num_frames_per_clip=16, crop_size=112, shuffle=True):
-    lines = open(filename, 'r')
+def read_clip_and_label(filenames, labels, batch_size, np_mean, num_frames_per_clip=16, crop_size=112):
+    # lines = open(filename, 'r')
     read_dirnames = []
     data = []
     label = []
-    batch_index = 0
-    next_batch_start = -1
-    lines = list(lines)
-    np_mean = np.load('./models/crop_mean.npy').reshape([num_frames_per_clip, crop_size, crop_size, 3])
+    # batch_index = 0
+    # next_batch_start = -1
+    # lines = list(lines)
+    # np_mean = np.load('./models/crop_mean.npy').reshape([num_frames_per_clip, crop_size, crop_size, 3])
     # Forcing shuffle, if start_pos is not specified
-    if start_pos < 0:
-        shuffle = True
-    if shuffle:
-        video_indices = range(len(lines))
-        random.seed(0)
-        random.shuffle(video_indices)
-    else:
-        # Process videos sequentially
-        video_indices = range(start_pos, len(lines))
+    # if start_pos < 0:
+    #     shuffle = True
+    # if shuffle:
+    #     video_indices = range(len(lines))
+    #     random.seed(0)
+    #     random.shuffle(video_indices)
+    # else:
+    #     # Process videos sequentially
+    #     video_indices = range(start_pos, len(lines))
     #todo: using while true ... to avoid reading the dirs with less than n frames or delete them in preprocessing step, no need since the following
-    #padding
-    for index in video_indices:
-        if (batch_index >= batch_size):
-            next_batch_start = index
-            break
-        line = lines[index].strip('\n').split()
-        dirname = line[0]
-        tmp_label = line[1]
-        if not shuffle:
-            print("Loading a video clip from {}...".format(dirname))
+    # #padding
+    # for index in video_indices:
+    #     if (batch_index >= batch_size):
+    #         next_batch_start = index
+    #         break
+    #     line = lines[index].strip('\n').split()
+    #     dirname = line[0]
+    #     tmp_label = line[1]
+    #     if not shuffle:
+    for dirname in filenames:
+        # print("Loading a video clip from {}...".format(dirname))
         tmp_data, _ = get_frames_data(dirname, num_frames_per_clip)
         img_datas = []
         if len(tmp_data) != 0:
@@ -104,8 +106,8 @@ def read_clip_and_label(filename, batch_size, start_pos=-1, num_frames_per_clip=
                        int((img.shape[1] - crop_size) / 2):int((img.shape[1] - crop_size) / 2) + crop_size, :] - np_mean[j]
                 img_datas.append(img)
             data.append(img_datas)
-            label.append(int(tmp_label))
-            batch_index = batch_index + 1
+            # label.append(int(tmp_label))
+            # batch_index = batch_index + 1
             read_dirnames.append(dirname)
 
     #todo: pad (duplicate) data/label if less than batch_size, here might be the reason why the low performance: data are repeated
@@ -114,9 +116,9 @@ def read_clip_and_label(filename, batch_size, start_pos=-1, num_frames_per_clip=
     if pad_len:
         for i in range(pad_len):
             data.append(img_datas)
-            label.append(int(tmp_label))
+            # label.append(int(tmp_label))
 
     np_arr_data = np.array(data).astype(np.float32)
-    np_arr_label = np.array(label).astype(np.int64)
+    np_arr_label = np.array(labels).astype(np.int64)
 
-    return np_arr_data, np_arr_label, next_batch_start, read_dirnames, valid_len
+    return np_arr_data, np_arr_label

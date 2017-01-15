@@ -23,7 +23,8 @@ import tensorflow as tf
 import input_data
 import c3d_model
 # import math
-# import numpy as np
+import numpy as np
+import random
 
 # Basic model parameters as external flags.
 flags = tf.app.flags
@@ -33,6 +34,7 @@ flags = tf.app.flags
 flags.DEFINE_integer('max_steps', 5000, 'Number of steps to run trainer.')
 flags.DEFINE_integer('batch_size', 10, 'Batch size.')
 flags.DEFINE_integer('gpu_id', None, 'id of GPU')
+flags.DEFINE_integer('randomseed', 0, 'random seed to produce reproducable results')
 FLAGS = flags.FLAGS
 MOVING_AVERAGE_DECAY = 0.9999
 model_save_dir = './models'
@@ -235,14 +237,66 @@ def run_training():
         merged = tf.summary.merge_all()
         train_writer = tf.summary.FileWriter('./visual_logs/train', sess.graph)
         test_writer = tf.summary.FileWriter('./visual_logs/test', sess.graph)
+
+        #todo: this part deals with a generating a random list of files
+        def get_list_of_filesnlabels(list_file, seed = 0):
+            home_dir = os.path.expanduser('~')
+            file_names=[]
+            labels=[]
+            with open(list_file,'r') as f:
+                for single_line in f:
+                    line_content=single_line.strip('\n').split()
+                    abs_dirname = line_content[0].replace('~', home_dir)
+                    label = int(line_content[1])
+                    file_names.append(abs_dirname)
+                    labels.append(label)
+            # pairs = zip(file_names,labels)
+            # pairs =sorted(pairs)
+            # if shuffle:
+            #     random.seed(seed)
+            #     random.shuffle(pairs)
+            assert len(file_names)==len(labels)
+            idxs = range(len(file_names))
+            return idxs, file_names, labels
+
+            # try:
+            #     f=open(list_file,'r')
+            #
+            # except IOError:
+            #     print ('{:s} does not exist'.format(list_file))
+            #     exit(-1)
+            # finally:
+            #     f.close()
+
+        train_idxs, train_filenames, train_labels = get_list_of_filesnlabels('list/train.list')
+        test_idxs, test_filenames, test_labels =get_list_of_filesnlabels('list/test.list')
+        np_mean = np.load('./models/crop_mean.npy').reshape([c3d_model.NUM_FRAMES_PER_CLIP, c3d_model.CROP_SIZE, c3d_model.CROP_SIZE, 3])
+
+        train_file_start_position = 0
+        test_file_start_position = 0
+        ntrainbatches = int(len(train_filenames)/FLAGS.batch_size)
+        ntestbatches = int(len(test_filenames)/FLAGS.batch_size)
+        random.seed(FLAGS.randomseed)
+
         for step in xrange(FLAGS.max_steps):
             start_time = time.time()
-            train_images, train_labels, _, _, _ = input_data.read_clip_and_label(
-                filename='list/train.list',
-                batch_size=FLAGS.batch_size ,
+            batch_id = step % ntrainbatches
+            if batch_id == 0:
+                random.shuffle(train_idxs)
+                train_filenames = [train_filenames[i] for i in train_idxs]
+                train_labels = [train_labels[i] for i in train_idxs]
+            start_idx = batch_id*FLAGS.batch_size
+            end_idx = min((batch_id+1)*FLAGS.batch_size, len(train_filenames))
+            batch_train_filenames = train_filenames[start_idx:end_idx]
+            batch_train_labels = train_labels[start_idx:end_idx]
+
+            train_images, train_labels= input_data.read_clip_and_label(
+                filenames=batch_train_filenames,
+                labels= batch_train_labels,
+                batch_size=FLAGS.batch_size,
+                np_mean= np_mean,
                 num_frames_per_clip=c3d_model.NUM_FRAMES_PER_CLIP,
                 crop_size=c3d_model.CROP_SIZE,
-                shuffle=True
             )
             sess.run(train_op, feed_dict={
                 images_placeholder: train_images,
@@ -251,7 +305,7 @@ def run_training():
             duration = time.time() - start_time
             print('Step %d: %.3f sec' % (step, duration))
 
-            # Save a checkpoint and evaluate the model periodically.
+            # Save a checkpoint
             if step % 10 == 0 or (step + 1) == FLAGS.max_steps:
                 saver.save(sess, os.path.join(model_save_dir, 'c3d_ucf_model'), global_step=step)
                 print('Training Data Eval:')
@@ -263,22 +317,34 @@ def run_training():
                     })
                 print ("accuracy: " + "{:.5f}".format(acc))
                 train_writer.add_summary(summary, step)
+            # evaluate the data based on all val data
+            if step % 100 == 0 or (step + 1) == FLAGS.max_steps:
                 print('Validation Data Eval:')
-                val_images, val_labels, _, _, _ = input_data.read_clip_and_label(
-                    filename='list/test.list',
-                    batch_size=FLAGS.batch_size,
-                    num_frames_per_clip=c3d_model.NUM_FRAMES_PER_CLIP,
-                    crop_size=c3d_model.CROP_SIZE,
-                    shuffle=True
-                )
-                summary, acc = sess.run(
-                    [merged, accuracy],
-                    feed_dict={
-                        images_placeholder: val_images,
-                        labels_placeholder: val_labels
-                    })
-                print ("accuracy: " + "{:.5f}".format(acc))
-                test_writer.add_summary(summary, step)
+                test_acc = 0
+                for test_id in range(ntestbatches):
+                    start_idx = test_id * FLAGS.batch_size
+                    end_idx = min((test_id + 1) * FLAGS.batch_size, len(test_filenames))
+                    # batch_train_filenames = train_filenames[start_idx:end_idx]
+                    # batch_train_labels = train_labels[start_idx:end_idx]
+                    batch_test_files = test_filenames[start_idx:end_idx]
+                    batch_test_labels = test_labels[start_idx:end_idx]
+                    val_images, val_labels = input_data.read_clip_and_label(
+                        filenames=batch_test_files,
+                        labels=batch_test_labels,
+                        batch_size=FLAGS.batch_size,
+                        np_mean=np_mean,
+                        num_frames_per_clip=c3d_model.NUM_FRAMES_PER_CLIP,
+                        crop_size=c3d_model.CROP_SIZE,
+                    )
+                    summary, acc = sess.run(
+                        [merged, accuracy],
+                        feed_dict={
+                            images_placeholder: val_images,
+                            labels_placeholder: val_labels
+                        })
+                    test_acc += acc
+                    test_writer.add_summary(summary, step)
+                print ("accuracy: " + "{:.5f}".format(test_acc/ntestbatches))
         print("done")
 
 def main(_):
