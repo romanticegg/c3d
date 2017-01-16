@@ -280,48 +280,119 @@ def run_training():
             print('Step {:d} \t time: {:.3f} sec, # of samples: {:d}'.format(step, duration,tr_labels.shape[0]))
 
             # Save a checkpoint
-            if (step+1) % 10 == 0 or (step + 1) == FLAGS.max_steps:
-                saver.save(sess, os.path.join(model_save_dir, 'c3d_ucf_model'), global_step=step)
-                print('Training Data Eval:')
-                summary, acc = sess.run(
-                    [merged, accuracy],
-                    feed_dict={
-                        images_placeholder: tr_images,
-                        labels_placeholder: tr_labels
-                    })
-                print ("Training accuracy: " + "{:.5f}".format(acc))
-                train_writer.add_summary(summary, step)
+            # if (step+1) % 10 == 0 or (step + 1) == FLAGS.max_steps:
+            #     saver.save(sess, os.path.join(model_save_dir, 'c3d_ucf_model'), global_step=step)
+            #     print('Training Data Eval:')
+            #     summary, acc = sess.run(
+            #         [merged, accuracy],
+            #         feed_dict={
+            #             images_placeholder: tr_images,
+            #             labels_placeholder: tr_labels
+            #         })
+            #     print ("Training accuracy: " + "{:.5f}".format(acc))
+            #     train_writer.add_summary(summary, step)
             # evaluate the data based on all val data
             if (step+1) % 100 == 0 or (step + 1) == FLAGS.max_steps:
-                print('Validation Data Eval:')
-                test_acc = 0
-                n_files_tested = 0
-                for test_id in range(ntestbatches+1):
-                    start_idx = test_id * FLAGS.batch_size
-                    end_idx = min((test_id + 1) * FLAGS.batch_size, len(test_filenames))
-                    # batch_train_filenames = train_filenames[start_idx:end_idx]
-                    # batch_train_labels = train_labels[start_idx:end_idx]
-                    batch_test_files = test_filenames[start_idx:end_idx]
-                    batch_test_labels = test_labels[start_idx:end_idx]
-                    val_images, val_labels = input_data.read_clip_and_label(
-                        filenames=batch_test_files,
-                        labels=batch_test_labels,
-                        batch_size=FLAGS.batch_size,
-                        np_mean=np_mean,
-                        num_frames_per_clip=c3d_model.NUM_FRAMES_PER_CLIP,
-                        crop_size=c3d_model.CROP_SIZE,
-                    )
-                    if val_labels.size:  # check on nparray
-                        summary, acc = sess.run(
-                            [merged, accuracy],
-                            feed_dict={
-                                images_placeholder: val_images,
-                                labels_placeholder: val_labels
-                            })
-                        n_files_tested +=len(val_labels)
-                        test_acc += acc*len(val_labels)
-                        test_writer.add_summary(summary, step)
-                print ("Testing accuracy: " + "{:.5f}".format(test_acc/n_files_tested))
+                saver.save(sess, os.path.join(model_save_dir, 'c3d_ucf_model'), global_step=step)
+
+                # val_acc = 0
+                # n_files_trained = 0
+                # for train_id in range(ntrainbatches+1):
+                #     start_idx = train_id * FLAGS.batch_size
+                #     end_idx = min((train_id + 1) * FLAGS.batch_size, len(train_filenames))
+                #     batch_test_files = test_filenames[start_idx:end_idx]
+                #     batch_test_labels = test_labels[start_idx:end_idx]
+                #     val_images, val_labels = input_data.read_clip_and_label(
+                #         filenames=batch_test_files,
+                #         labels=batch_test_labels,
+                #         batch_size=FLAGS.batch_size,
+                #         np_mean=np_mean,
+                #         num_frames_per_clip=c3d_model.NUM_FRAMES_PER_CLIP,
+                #         crop_size=c3d_model.CROP_SIZE,
+                #     )
+                #     if val_labels.size:  # check on nparray
+                #         summary, acc = sess.run(
+                #             [merged, accuracy],
+                #             feed_dict={
+                #                 images_placeholder: val_images,
+                #                 labels_placeholder: val_labels
+                #             })
+                #         n_files_tested +=len(val_labels)
+                #         test_acc += acc*len(val_labels)
+                #         test_writer.add_summary(summary, step)
+                # print ("Testing accuracy: " + "{:.5f}".format(test_acc/n_files_tested))
+                # print('Training Data Eval:')
+                # summary, acc = sess.run(
+                #     [merged, accuracy],
+                #     feed_dict={
+                #         images_placeholder: tr_images,
+                #         labels_placeholder: tr_labels
+                #     })
+                # print ("Training accuracy: " + "{:.5f}".format(acc))
+                # train_writer.add_summary(summary, step)
+
+                print('Test Data Eval:')
+
+                def performance_eval(tf_acc, file_list, label_list, batch_size, np_mean):
+                    cum_acc = 0
+                    cum_files = 0
+                    n_files = len(file_list)
+                    n_batches = int(n_files/batch_size)
+                    for batch_id in xrange(n_batches+1):
+                        start_idx = batch_id * batch_size
+                        end_idx = min((batch_id + 1) * batch_size, n_files)
+
+                        batch_files = file_list[start_idx:end_idx]
+                        batch_labels = label_list[start_idx:end_idx]
+                        images_data, labels_data = input_data.read_clip_and_label(
+                            filenames=batch_files,
+                            labels=batch_labels,
+                            batch_size=batch_size,
+                            np_mean=np_mean,
+                            num_frames_per_clip=c3d_model.NUM_FRAMES_PER_CLIP,
+                            crop_size=c3d_model.CROP_SIZE,
+                        )
+                        if labels_data.size:  # check on nparray
+                            batch_acc = sess.run(
+                                tf_acc,
+                                feed_dict={
+                                    images_placeholder: images_data,
+                                    labels_placeholder: labels_data
+                                })
+                            cum_files += labels_data.size
+                            cum_acc += batch_acc * labels_data.size
+                            # test_writer.add_summary(summary, step)
+                    return  cum_acc*1.0/cum_files
+
+                # test_acc = 0
+                # n_files_tested = 0
+                # for test_id in range(ntestbatches+1):
+                #     start_idx = test_id * FLAGS.batch_size
+                #     end_idx = min((test_id + 1) * FLAGS.batch_size, len(test_filenames))
+                #     # batch_train_filenames = train_filenames[start_idx:end_idx]
+                #     # batch_train_labels = train_labels[start_idx:end_idx]
+                #     batch_test_files = test_filenames[start_idx:end_idx]
+                #     batch_test_labels = test_labels[start_idx:end_idx]
+                #     val_images, val_labels = input_data.read_clip_and_label(
+                #         filenames=batch_test_files,
+                #         labels=batch_test_labels,
+                #         batch_size=FLAGS.batch_size,
+                #         np_mean=np_mean,
+                #         num_frames_per_clip=c3d_model.NUM_FRAMES_PER_CLIP,
+                #         crop_size=c3d_model.CROP_SIZE,
+                #     )
+                #     if val_labels.size:  # check on nparray
+                #         summary, acc = sess.run(
+                #             [merged, accuracy],
+                #             feed_dict={
+                #                 images_placeholder: val_images,
+                #                 labels_placeholder: val_labels
+                #             })
+                #         n_files_tested +=len(val_labels)
+                #         test_acc += acc*len(val_labels)
+                #         test_writer.add_summary(summary, step)
+                test_acc = performance_eval(accuracy, test_filenames, test_labels, FLAGS.batch_size, np_mean)
+                print ("Testing accuracy: " + "{:.5f}".format(test_acc))
         print("done")
 
 def main(_):
