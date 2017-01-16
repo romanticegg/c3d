@@ -311,7 +311,7 @@ def run_training():
                         num_frames_per_clip=c3d_model.NUM_FRAMES_PER_CLIP,
                         crop_size=c3d_model.CROP_SIZE,
                     )
-                    if val_labels and val_images:
+                    if val_labels:
                         summary, acc = sess.run(
                             [merged, accuracy],
                             feed_dict={
