@@ -291,7 +291,7 @@ def run_training():
             batch_train_labels = train_labels[start_idx:end_idx]
 
             assert len(batch_train_filenames)==len(batch_train_labels)
-            train_images, train_labels= input_data.read_clip_and_label(
+            tr_images, tr_labels= input_data.read_clip_and_label(
                 filenames=batch_train_filenames,
                 labels= batch_train_labels,
                 batch_size=FLAGS.batch_size,
@@ -300,8 +300,8 @@ def run_training():
                 crop_size=c3d_model.CROP_SIZE,
             )
             sess.run(train_op, feed_dict={
-                images_placeholder: train_images,
-                labels_placeholder: train_labels
+                images_placeholder: tr_images,
+                labels_placeholder: tr_labels
             })
             duration = time.time() - start_time
             print('Step %d: %.3f sec' % (step, duration))
@@ -313,8 +313,8 @@ def run_training():
                 summary, acc = sess.run(
                     [merged, accuracy],
                     feed_dict={
-                        images_placeholder: train_images,
-                        labels_placeholder: train_labels
+                        images_placeholder: tr_images,
+                        labels_placeholder: tr_labels
                     })
                 print ("accuracy: " + "{:.5f}".format(acc))
                 train_writer.add_summary(summary, step)
