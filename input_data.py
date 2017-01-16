@@ -34,6 +34,23 @@ home_dir = os.path.expanduser('~')
 random.seed(0)
 
 
+def get_list_of_filesnlabels(list_file):
+    # home_dir = os.path.expanduser('~')
+    file_names = []
+    labels = []
+
+    with open(list_file, 'r') as f:
+        for single_line in f:
+            line_content = single_line.strip('\n').split()
+            abs_dirname = line_content[0].replace('~', home_dir)
+            label = int(line_content[1])
+            file_names.append(abs_dirname)
+            labels.append(label)
+
+    assert len(file_names) == len(labels)
+    idxs = range(len(file_names))
+    return idxs, file_names, labels
+
 def get_frames_data(dirname, num_frames_per_clip=16):
     ''' Given a directory containing extracted frames, return a video clip of
   (num_frames_per_clip) consecutive frames as a list of np arrays '''
@@ -48,8 +65,9 @@ def get_frames_data(dirname, num_frames_per_clip=16):
     if len(fullimagenames) < num_frames_per_clip:
         print('{:s} does not have enough data'.format(abs_dirname))
         return [],[]
-
-    start_idx = random.randint(0, len(fullimagenames) - num_frames_per_clip)
+    #fixme: this time remove the randomness, just use the center
+    # start_idx = random.randint(0, len(fullimagenames) - num_frames_per_clip)
+    start_idx = int((len(fullimagenames) - num_frames_per_clip)/2)
     print('{:s} has {:d} files, starting:{:d}'.format(abs_dirname,len(fullimagenames), start_idx))
 
     selectedimagenames=fullimagenames[start_idx:start_idx+num_frames_per_clip]
@@ -67,7 +85,7 @@ def read_clip_and_label(filenames, labels, batch_size, np_mean, num_frames_per_c
         # print("Loading a video clip from {}...".format(dirname))
         tmp_data, _ = get_frames_data(dirname, num_frames_per_clip)
         img_datas = []
-        if len(tmp_data) != 0:
+        if tmp_data:
             for j in xrange(len(tmp_data)):
                 img = Image.fromarray(tmp_data[j].astype(np.uint8))
                 if (img.width > img.height):
@@ -78,6 +96,7 @@ def read_clip_and_label(filenames, labels, batch_size, np_mean, num_frames_per_c
                     scale = float(crop_size) / float(img.width)
                     img = np.array(imresize(np.array(img), (crop_size, int(img.height * scale + 1)))).astype(
                         np.float32)
+
                 img = img[int((img.shape[0] - crop_size) / 2): int((img.shape[0] - crop_size) / 2) + crop_size,
                        int((img.shape[1] - crop_size) / 2):int((img.shape[1] - crop_size) / 2) + crop_size, :] - np_mean[j]
                 img_datas.append(img)

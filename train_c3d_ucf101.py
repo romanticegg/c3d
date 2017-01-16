@@ -238,39 +238,10 @@ def run_training():
         train_writer = tf.summary.FileWriter('./visual_logs/train', sess.graph)
         test_writer = tf.summary.FileWriter('./visual_logs/test', sess.graph)
 
-        #todo: this part deals with a generating a random list of files
-        def get_list_of_filesnlabels(list_file, seed = 0):
-            home_dir = os.path.expanduser('~')
-            file_names=[]
-            labels=[]
-            with open(list_file,'r') as f:
-                for single_line in f:
-                    line_content=single_line.strip('\n').split()
-                    abs_dirname = line_content[0].replace('~', home_dir)
-                    label = int(line_content[1])
-                    file_names.append(abs_dirname)
-                    labels.append(label)
-            # pairs = zip(file_names,labels)
-            # pairs =sorted(pairs)
-            # if shuffle:
-            #     random.seed(seed)
-            #     random.shuffle(pairs)
-            assert len(file_names)==len(labels)
-            idxs = range(len(file_names))
-            return idxs, file_names, labels
-
-            # try:
-            #     f=open(list_file,'r')
-            #
-            # except IOError:
-            #     print ('{:s} does not exist'.format(list_file))
-            #     exit(-1)
-            # finally:
-            #     f.close()
-
-        train_idxs, train_filenames, train_labels = get_list_of_filesnlabels('list/train.list')
-        test_idxs, test_filenames, test_labels =get_list_of_filesnlabels('list/test.list')
+        train_idxs, train_filenames, train_labels = input_data.get_list_of_filesnlabels('list/train.list')
+        test_idxs, test_filenames, test_labels =input_data.get_list_of_filesnlabels('list/test.list')
         np_mean = np.load('./models/crop_mean.npy').reshape([c3d_model.NUM_FRAMES_PER_CLIP, c3d_model.CROP_SIZE, c3d_model.CROP_SIZE, 3])
+
 
         train_file_start_position = 0
         test_file_start_position = 0
@@ -279,8 +250,9 @@ def run_training():
         random.seed(FLAGS.randomseed)
 
         for step in xrange(FLAGS.max_steps):
+            print '-'*32
             start_time = time.time()
-            batch_id = step % ntrainbatches
+            batch_id = step % (ntrainbatches)
             if batch_id == 0:
                 random.shuffle(train_idxs)
                 train_filenames = [train_filenames[i] for i in train_idxs]
@@ -317,13 +289,14 @@ def run_training():
                         images_placeholder: tr_images,
                         labels_placeholder: tr_labels
                     })
-                print ("accuracy: " + "{:.5f}".format(acc))
+                print ("Training accuracy: " + "{:.5f}".format(acc))
                 train_writer.add_summary(summary, step)
             # evaluate the data based on all val data
             if (step+1) % 100 == 0 or (step + 1) == FLAGS.max_steps:
                 print('Validation Data Eval:')
                 test_acc = 0
-                for test_id in range(ntestbatches):
+                n_files_tested = 0
+                for test_id in range(ntestbatches+1):
                     start_idx = test_id * FLAGS.batch_size
                     end_idx = min((test_id + 1) * FLAGS.batch_size, len(test_filenames))
                     # batch_train_filenames = train_filenames[start_idx:end_idx]
@@ -338,15 +311,17 @@ def run_training():
                         num_frames_per_clip=c3d_model.NUM_FRAMES_PER_CLIP,
                         crop_size=c3d_model.CROP_SIZE,
                     )
-                    summary, acc = sess.run(
-                        [merged, accuracy],
-                        feed_dict={
-                            images_placeholder: val_images,
-                            labels_placeholder: val_labels
-                        })
-                    test_acc += acc*len(val_labels)
-                    test_writer.add_summary(summary, step)
-                print ("accuracy: " + "{:.5f}".format(test_acc/len(test_filenames)))
+                    if val_labels and val_images:
+                        summary, acc = sess.run(
+                            [merged, accuracy],
+                            feed_dict={
+                                images_placeholder: val_images,
+                                labels_placeholder: val_labels
+                            })
+                        n_files_tested +=len(val_labels)
+                        test_acc += acc*len(val_labels)
+                        test_writer.add_summary(summary, step)
+                print ("Testing accuracy: " + "{:.5f}".format(test_acc/n_files_tested))
         print("done")
 
 def main(_):
