@@ -56,12 +56,12 @@ def placeholder_inputs(batch_size):
     # Note that the shapes of the placeholders match the shapes of the full
     # image and label tensors, except the first dimension is now batch_size
     # rather than the full size of the train or test data sets.
-    images_placeholder = tf.placeholder(tf.float32, shape=(batch_size,
+    images_placeholder = tf.placeholder(tf.float32, shape=(None,
                                                            c3d_model.NUM_FRAMES_PER_CLIP,
                                                            c3d_model.CROP_SIZE,
                                                            c3d_model.CROP_SIZE,
                                                            c3d_model.CHANNELS))
-    labels_placeholder = tf.placeholder(tf.int64, shape=(batch_size))
+    labels_placeholder = tf.placeholder(tf.int64, shape=(None))
     return images_placeholder, labels_placeholder
 
 
@@ -299,12 +299,13 @@ def run_training():
                 num_frames_per_clip=c3d_model.NUM_FRAMES_PER_CLIP,
                 crop_size=c3d_model.CROP_SIZE,
             )
+
             sess.run(train_op, feed_dict={
                 images_placeholder: tr_images,
                 labels_placeholder: tr_labels
             })
             duration = time.time() - start_time
-            print('Step %d: %.3f sec' % (step, duration))
+            print('Step {:d} \t time: {:.3f} sec, # of samples: {:d}'.format(step, duration,tr_labels.shape[0]))
 
             # Save a checkpoint
             if (step+1) % 10 == 0 or (step + 1) == FLAGS.max_steps:
@@ -343,9 +344,9 @@ def run_training():
                             images_placeholder: val_images,
                             labels_placeholder: val_labels
                         })
-                    test_acc += acc
+                    test_acc += acc*len(val_labels)
                     test_writer.add_summary(summary, step)
-                print ("accuracy: " + "{:.5f}".format(test_acc/ntestbatches))
+                print ("accuracy: " + "{:.5f}".format(test_acc/len(test_filenames)))
         print("done")
 
 def main(_):
