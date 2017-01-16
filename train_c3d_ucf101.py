@@ -306,7 +306,7 @@ def run_training():
             print('Step %d: %.3f sec' % (step, duration))
 
             # Save a checkpoint
-            if step % 10 == 0 or (step + 1) == FLAGS.max_steps:
+            if (step+1) % 10 == 0 or (step + 1) == FLAGS.max_steps:
                 saver.save(sess, os.path.join(model_save_dir, 'c3d_ucf_model'), global_step=step)
                 print('Training Data Eval:')
                 summary, acc = sess.run(
