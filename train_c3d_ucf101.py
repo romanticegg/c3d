@@ -290,6 +290,7 @@ def run_training():
             batch_train_filenames = train_filenames[start_idx:end_idx]
             batch_train_labels = train_labels[start_idx:end_idx]
 
+            assert len(batch_train_filenames)==len(batch_train_labels)
             train_images, train_labels= input_data.read_clip_and_label(
                 filenames=batch_train_filenames,
                 labels= batch_train_labels,

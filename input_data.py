@@ -31,6 +31,8 @@ import glob
 
 home_dir = os.path.expanduser('~')
 
+random.seed(0)
+
 def get_frames_data(dirname, num_frames_per_clip=16):
     ''' Given a directory containing extracted frames, return a video clip of
   (num_frames_per_clip) consecutive frames as a list of np arrays '''
