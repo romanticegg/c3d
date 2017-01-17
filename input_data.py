@@ -82,7 +82,7 @@ def get_frames_data(dirname, num_frames_per_clip=16):
     return ret_arr, start_idx
 
 
-def read_clip_and_label(filenames, labels, batch_size, np_mean, num_frames_per_clip=16, crop_size=112, RGB = True):
+def read_clip_and_label(filenames, labels, batch_size, np_mean, num_frames_per_clip=16, crop_size=112, RGB =True):
     data = []
     label = []
     for file_idx,dirname in enumerate(filenames):

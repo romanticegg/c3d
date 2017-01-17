@@ -81,6 +81,7 @@ def average_gradients(tower_grads):
         average_grads.append(grad_and_var)
     return average_grads
 
+
 def tower_loss(name_scope, logit, labels):
     cross_entropy_mean = tf.reduce_mean(
         tf.nn.sparse_softmax_cross_entropy_with_logits(logit, labels)
@@ -105,15 +106,18 @@ def tower_loss(name_scope, logit, labels):
         total_loss = tf.identity(total_loss)
     return total_loss
 
+
 def tower_acc(logit, labels):
     correct_pred = tf.equal(tf.argmax(logit, 1), labels)
     accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
     return accuracy
 
+
 def _variable_on_cpu(name, shape, initializer):
     with tf.device('/cpu:0'):
         var = tf.get_variable(name, shape, initializer=initializer)
     return var
+
 
 def _variable_with_weight_decay(name, shape, wd):
     var = _variable_on_cpu(name, shape, tf.contrib.layers.xavier_initializer())
@@ -316,55 +320,8 @@ def run_training():
                 duration = time.time() - start_time
                 print('Step {:d} \t time: {:.3f} sec, # of samples: {:d}'.format(step, duration,tr_labels.shape[0]))
 
-                # Save a checkpoint
-                # if (step+1) % 10 == 0 or (step + 1) == FLAGS.max_steps:
-                #     saver.save(sess, os.path.join(model_save_dir, 'c3d_ucf_model'), global_step=step)
-                #     print('Training Data Eval:')
-                #     summary, acc = sess.run(
-                #         [merged, accuracy],
-                #         feed_dict={
-                #             images_placeholder: tr_images,
-                #             labels_placeholder: tr_labels
-                #         })
-                #     print ("Training accuracy: " + "{:.5f}".format(acc))
-                #     train_writer.add_summary(summary, step)
-                # evaluate the data based on all val data
                 if (step+1) % 100 == 0 or (step + 1) == FLAGS.max_steps:
                     saver.save(sess, os.path.join(model_save_dir, 'c3d_ucf_model'), global_step=step)
-
-
-
-                    # test_acc = 0
-                    # n_files_tested = 0
-                    # for test_id in range(ntestbatches+1):
-                    #     start_idx = test_id * FLAGS.batch_size
-                    #     end_idx = min((test_id + 1) * FLAGS.batch_size, len(test_filenames))
-                    #     # batch_train_filenames = train_filenames[start_idx:end_idx]
-                    #     # batch_train_labels = train_labels[start_idx:end_idx]
-                    #     batch_test_files = test_filenames[start_idx:end_idx]
-                    #     batch_test_labels = test_labels[start_idx:end_idx]
-                    #     val_images, val_labels = input_data.read_clip_and_label(
-                    #         filenames=batch_test_files,
-                    #         labels=batch_test_labels,
-                    #         batch_size=FLAGS.batch_size,
-                    #         np_mean=np_mean,
-                    #         num_frames_per_clip=c3d_model.NUM_FRAMES_PER_CLIP,
-                    #         crop_size=c3d_model.CROP_SIZE,
-                    #     )
-                    #     if val_labels.size:  # check on nparray
-                    #         summary, acc = sess.run(
-                    #             [merged, accuracy],
-                    #             feed_dict={
-                    #                 images_placeholder: val_images,
-                    #                 labels_placeholder: val_labels
-                    #             })
-                    #         n_files_tested +=len(val_labels)
-                    #         test_acc += acc*len(val_labels)
-                    #         test_writer.add_summary(summary, step)
-                    # print('Train Data Eval:')
-                    # train_acc = performance_eval(sess, accuracy, images_placeholder, labels_placeholder,
-                    #                              train_filenames, train_labels, FLAGS.batch_size, np_mean)
-                    # print ("Training accuracy: " + "{:.5f}".format(train_acc))
 
                     print('Test Data Eval:')
                     test_acc = performance_eval(sess, accuracy, images_placeholder, labels_placeholder,
@@ -382,6 +339,7 @@ def run_training():
                                         test_filenames, test_labels, FLAGS.batch_size, np_mean)
             print ("Testing accuracy: " + "{:.5f}".format(test_acc))
         print("done")
+
 
 def main(_):
     run_training()
