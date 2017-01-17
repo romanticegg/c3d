@@ -17,19 +17,18 @@
 # pylint: disable=missing-docstring
 import os
 import time
-import numpy
-# from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
-import input_data
-import c3d_model
-# import math
 import numpy as np
 import random
+import tensorflow as tf
+
+import input_data
+import c3d_model
+import consts as c
+
 
 # Basic model parameters as external flags.
 flags = tf.app.flags
-# gpu_num = 2
-#todo: refine this part
+#todo: refine this section
 #flags.DEFINE_float('learning_rate', 0.0, 'Initial learning rate.')
 flags.DEFINE_integer('max_steps', 5000, 'Number of steps to run trainer, if 0, test on both training and testing data [5000]')
 flags.DEFINE_integer('batch_size', 10, 'Batch size.')
@@ -127,7 +126,7 @@ def _variable_with_weight_decay(name, shape, wd):
     return var
 
 
-def performance_eval(sess, tf_acc, images_placeholder, labels_placeholder,file_list, label_list, batch_size, np_mean):
+def performance_eval(sess, tf_acc, images_placeholder, labels_placeholder, file_list, label_list, batch_size, np_mean):
     cum_acc = 0
     cum_files = 0
     n_files = len(file_list)

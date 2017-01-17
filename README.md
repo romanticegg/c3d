@@ -29,6 +29,10 @@ I double checked without noticing any bugs. But if you do find one, please let m
 4. [PIL] is **not** necessary
 
 
+## How to run:
+1. Prepare data like list/train.list and list/test.list, make sure the paths stored in are correct
+2. `python train_c3d_ucf101.py --max_steps 0 --gpu_id 1`   Here 0 means only test
+
 ----------------------------------------------------------------------------------
 **Below are from the original post:**
 
