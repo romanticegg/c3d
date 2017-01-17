@@ -30,7 +30,9 @@ import numpy as np
 # Basic model parameters as external flags.
 flags = tf.app.flags
 gpu_num = 2
-flags.DEFINE_integer('batch_size', 10 , 'Batch size.')
+flags.DEFINE_integer('batch_size', 10 , 'Batch size[10]')
+flags.DEFINE_integer('gpu_id', None , 'Spcify the ID of the GPU to run on[None]')
+
 FLAGS = flags.FLAGS
 
 def placeholder_inputs(batch_size):
@@ -124,12 +126,17 @@ def run_test():
     # Fill a feed dictionary with the actual set of images and labels
     # for this particular training step.
     start_time = time.time()
-    test_images, test_labels, next_start_pos, _, valid_len = \
-            input_data.read_clip_and_label(
-                    test_list_file,
-                    FLAGS.batch_size * gpu_num,
-                    start_pos=next_start_pos
-                    )
+    #todo: update here:
+    # test_images, test_labels, next_start_pos, _, valid_len = \
+    #         input_data.read_clip_and_label(
+    #                 test_list_file,
+    #                 FLAGS.batch_size * gpu_num,
+    #                 start_pos=next_start_pos
+    #                 )
+    test_images = None
+    test_labels = None
+    valid_len = None
+
     predict_score = norm_score.eval(
             session=sess,
             feed_dict={images_placeholder: test_images}
