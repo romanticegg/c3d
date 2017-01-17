@@ -26,17 +26,24 @@ from scipy.ndimage  import imread
 import random
 import numpy as np
 import cv2
-from scipy.misc import imresize
+# from scipy.misc import imresize  # avoid this one due to uncertainties
 # import time
 import glob
-
+import consts as c
 home_dir = os.path.expanduser('~')
 
 random.seed(0)
 
 
 def get_list_of_filesnlabels(list_file):
-    # home_dir = os.path.expanduser('~')
+    '''
+
+    :param list_file: path to the file with the following format:
+     path1 label1\n
+     path2 label2\n
+    :return: idx: 0~#, file_names: list, lables: list
+    '''
+
     file_names = []
     labels = []
 
@@ -52,49 +59,21 @@ def get_list_of_filesnlabels(list_file):
     idxs = range(len(file_names))
     return idxs, file_names, labels
 
-#todo check if need reverse.
-def get_frames_data(dirname, num_frames_per_clip=16):
-    ''' Given a directory containing extracted frames, return a video clip of
-  (num_frames_per_clip) consecutive frames as a list of np arrays '''
-    ret_arr = []
-    # s_index = 0
 
-    abs_dirname = dirname.replace('~',home_dir)
-    # print('Reading File: {:s}'.format(abs_dirname))
+def read_clip_and_label(dirnames, labels, np_mean, num_frames_per_clip=16, crop_size=112, RGB=True):
+    batch_data = []
+    batch_label = []
 
-    fullimagenames=sorted(glob.glob(os.path.join(abs_dirname,'*.{:s}'.format('jpg'))))
-
-    if len(fullimagenames) < num_frames_per_clip:
-        print('{:s} does not have enough data'.format(abs_dirname))
-        return [],[]
-    #fixme: this time remove the randomness, just use the center
-    # start_idx = random.randint(0, len(fullimagenames) - num_frames_per_clip)
-    start_idx = int((len(fullimagenames) - num_frames_per_clip)/2)
-    print('{:s} has {:d} files, starting:{:d}'.format(abs_dirname,len(fullimagenames), start_idx))
-
-    selectedimagenames=fullimagenames[start_idx:start_idx+num_frames_per_clip]
-    for single_filename in selectedimagenames:
-        # img = Image.open(single_filename)
-        # avoid transfering back and forth
-        # img_data = np.array(img)
-        img = imread(single_filename, mode='RGB')
-        ret_arr.append(img)
-    return ret_arr, start_idx
-
-
-def read_clip_and_label(filenames, labels, batch_size, np_mean, num_frames_per_clip=16, crop_size=112, RGB =True):
-    data = []
-    label = []
-    for file_idx,dirname in enumerate(filenames):
-        # print("Loading a video clip from {}...".format(dirname))
-        tmp_data, _ = get_frames_data(dirname, num_frames_per_clip)
+    for s_label, s_dirname in zip(labels,dirnames):
         img_seq = []
-        if tmp_data:
-            for j in xrange(len(tmp_data)):
-                img = np.array(tmp_data[j],np.float32)
+        raw_data, _ = get_frames_data(s_dirname, num_frames_per_clip, isRGB=RGB)
+        if raw_data:
+            assert len(raw_data) == num_frames_per_clip
+            for j in xrange(num_frames_per_clip):
+                img = np.array(raw_data[j],np.float32)
                 img_width = img.shape[1]
                 img_height = img.shape[0]
-                if (img_width > img_height):
+                if img_width > img_height:
                     scale = float(crop_size) / float(img_height)
                     img = cv2.resize(np.array(img), (int(img_width * scale + 1), crop_size))
                 else:
@@ -102,34 +81,45 @@ def read_clip_and_label(filenames, labels, batch_size, np_mean, num_frames_per_c
                     img = cv2.resize(np.array(img), (crop_size, int(img_height * scale + 1)))
 
                 img = img[int((img.shape[0] - crop_size) / 2): int((img.shape[0] - crop_size) / 2) + crop_size,
-                       int((img.shape[1] - crop_size) / 2):int((img.shape[1] - crop_size) / 2) + crop_size, :]
-
-                if RGB:
-                    img -= np_mean[j]
-                else:
-                    # if not RGB, then BGR, reverse the order
-                    img = img[:, :, ::-1]
-                    img -= np_mean[j]
+                       int((img.shape[1] - crop_size) / 2):int((img.shape[1] - crop_size) / 2) + crop_size, :] - np_mean[j]
 
                 img_seq.append(img)
-            data.append(img_seq)
-            label.append(labels[file_idx])
+            batch_data.append(img_seq)
+            batch_label.append(s_label)
 
-
-    #todo: pad (duplicate) data/label if less than batch_size, here might be the reason why the low performance: data are repeated
-    # valid_len = len(data)
-    # pad_len = batch_size - valid_len
-    # # it's not likely none of the data are satisfied
-    # pad_data = data[-1]
-    # pad_label = label[-1]
-    # if pad_len:
-    #     for i in range(pad_len):
-    #         data.append(pad_data)
-    #         label.append(pad_label)
-            # label.append(int(tmp_label))
-
-    np_arr_data = np.array(data).astype(np.float32)
-    np_arr_label = np.array(label).astype(np.int64)
+    np_arr_data = np.array(batch_data).astype(np.float32)
+    np_arr_label = np.array(batch_label).astype(np.int64)
     assert np_arr_data.shape[0] == np_arr_label.shape[0]
-    # print ('valid # of frames: {:d}'.format(np_arr_data.shape[0]))
     return np_arr_data, np_arr_label
+
+
+def get_frames_data(abs_dirname, num_frames_per_clip=16, isRGB=True):
+    '''
+    Given a directory containing extracted frames, return a video clip of
+    (num_frames_per_clip) consecutive frames as a list of np arrays
+    :param abs_dirname:
+    :param num_frames_per_clip:
+    :param isRGB:
+    :return:
+    '''
+
+    fullimagenames=sorted(glob.glob(os.path.join(abs_dirname,'*.{:s}'.format(c.IMAGE_FMT))))
+
+    if len(fullimagenames) < num_frames_per_clip:
+        print('{:s} has {:d} frames,  NOT enough data'.format(abs_dirname, len(fullimagenames)))
+        return []
+
+    ret_arr = []
+    #todo: currently it removes the randomness, just use the center
+    # start_idx = random.randint(0, len(fullimagenames) - num_frames_per_clip)
+    start_idx = int((len(fullimagenames) - num_frames_per_clip)/2)
+    selectedimagenames=fullimagenames[start_idx:start_idx+num_frames_per_clip]
+    for single_filename in selectedimagenames:
+        img = imread(single_filename, mode='RGB')
+        if not isRGB:
+            img = img[:,:,::-1]
+        ret_arr.append(img)
+
+    print('{:s} has {:d} files, starting at:{:d}'.format(abs_dirname,len(fullimagenames), start_idx))
+
+    return ret_arr

@@ -139,9 +139,8 @@ def performance_eval(sess, tf_acc, images_placeholder, labels_placeholder,file_l
         batch_files = file_list[start_idx:end_idx]
         batch_labels = label_list[start_idx:end_idx]
         images_data, labels_data = input_data.read_clip_and_label(
-            filenames=batch_files,
+            dirnames=batch_files,
             labels=batch_labels,
-            batch_size=batch_size,
             np_mean=np_mean,
             num_frames_per_clip=c3d_model.NUM_FRAMES_PER_CLIP,
             crop_size=c3d_model.CROP_SIZE,
@@ -304,13 +303,12 @@ def run_training():
 
                 assert len(batch_train_filenames)==len(batch_train_labels)
                 tr_images, tr_labels= input_data.read_clip_and_label(
-                    filenames=batch_train_filenames,
+                    dirnames=batch_train_filenames,
                     labels= batch_train_labels,
-                    batch_size=FLAGS.batch_size,
                     np_mean= np_mean,
                     num_frames_per_clip=c3d_model.NUM_FRAMES_PER_CLIP,
                     crop_size=c3d_model.CROP_SIZE,
-                    RGB= FLAGS.rgb
+                    RGB=FLAGS.rgb
                 )
 
                 sess.run(train_op, feed_dict={
