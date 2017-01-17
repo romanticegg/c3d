@@ -24,21 +24,41 @@ import tensorflow as tf
 import input_data
 import c3d_model
 import consts as c
-
+import utils
 
 # Basic model parameters as external flags.
 flags = tf.app.flags
 #todo: refine this section
 #flags.DEFINE_float('learning_rate', 0.0, 'Initial learning rate.')
-flags.DEFINE_integer('max_steps', 5000, 'Number of steps to run trainer, if 0, test on both training and testing data [5000]')
+flags.DEFINE_integer('max_steps', 5000, 'Number of steps to run trainer, if 0, test on both training and testing '
+                                        'data [5000]')
 flags.DEFINE_integer('batch_size', 10, 'Batch size.')
+#todo:
+# flags.DEFINE_string('gpu_id', None, 'ids of GPUs')
 flags.DEFINE_integer('gpu_id', None, 'id of GPU')
 flags.DEFINE_integer('randomseed', 0, 'random seed to produce reproducable results')
 flags.DEFINE_boolean('rgb', True, 'If data should be loaded as RGB[True] or BGR')
+flags.DEFINE_string('model', None, 'the model to load, if None, training from scratch[None], can either be a path to '
+                                   'a single .model file or a pattern that fit with .meta, .index '
+                                   '(e.g. ./models/c3d_ucf_model-99 for 3 files like XXX.meta, XXX.index and '
+                                   'XXX.data-00000-of-00001)')
+flags.DEFINE_string("save_name", None, "Directory in which to save output of this run[Currentdate such as 2017-01...]")
+flags.DEFINE_boolean("overwrite", True, "Overwrites all previous data for the model with this save name[True]")
+
 # flags.DEFINE_boolean('testonly', False, 'If only testing without training[False]')
 FLAGS = flags.FLAGS
 MOVING_AVERAGE_DECAY = 0.9999
-model_save_dir = './models'
+# model_save_dir = './models'
+
+
+if FLAGS.save_name is None:
+    #todo: expand for more meaningful information
+    c.set_save_name(utils.get_date_str())
+else:
+    c.set_save_name(FLAGS.save_name)
+
+if FLAGS.overwrite:
+    c.clear_save_name()
 
 
 def placeholder_inputs(batch_size):
@@ -66,6 +86,7 @@ def placeholder_inputs(batch_size):
     return images_placeholder, labels_placeholder
 
 
+#todo ? I dont understand
 def average_gradients(tower_grads):
     average_grads = []
     for grad_and_vars in zip(*tower_grads):
@@ -83,7 +104,7 @@ def average_gradients(tower_grads):
 
 def tower_loss(name_scope, logit, labels):
     cross_entropy_mean = tf.reduce_mean(
-        tf.nn.sparse_softmax_cross_entropy_with_logits(logit, labels)
+        tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logit, labels=labels)
     )
     tf.summary.scalar(
         name_scope + 'cross entropy',
@@ -107,6 +128,7 @@ def tower_loss(name_scope, logit, labels):
 
 
 def tower_acc(logit, labels):
+    #fixme: logit.get_shape.as_list[-1]
     correct_pred = tf.equal(tf.argmax(logit, 1), labels)
     accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
     return accuracy
@@ -162,11 +184,16 @@ def run_training():
     # Get the sets of images and labels for training, validation, and
     # Tell TensorFlow that the model will be built into the default Graph.
 
-    # Create model directory
-    if not os.path.exists(model_save_dir):
-        os.makedirs(model_save_dir)
-    use_pretrained_model = True
-    model_filename = "./models/sports1m_finetuning_ucf101.model"
+    # if not os.path.exists(model_save_dir):
+    #     os.makedirs(model_save_dir)
+
+    # if FLAGS.model:
+    #     use_pretrained_model = True
+    # else:
+    #     use_pretrained_model = False
+    #
+    # # model_filename = "./models/sports1m_finetuning_ucf101.model"
+    # model_filename = FLAGS.model
 
     with tf.Graph().as_default():
         global_step = tf.get_variable(
@@ -250,7 +277,8 @@ def run_training():
         # null_op = tf.no_op()
 
         # Create a saver for writing training checkpoints.
-        saver = tf.train.Saver(weights.values() + biases.values())
+        # fixme added var_list
+        saver = tf.train.Saver(var_list=weights.values() + biases.values())
         init = tf.global_variables_initializer()
 
     # Create a session for running Ops on the Graph.
@@ -268,8 +296,9 @@ def run_training():
             config=config
         )
         sess.run(init)
-        if os.path.isfile(model_filename) and use_pretrained_model:
-            saver.restore(sess, model_filename)
+
+        if FLAGS.model:
+            saver.restore(sess, FLAGS.model)
 
         # Create summary writter
         merged = tf.summary.merge_all()
@@ -280,13 +309,10 @@ def run_training():
         test_idxs, test_filenames, test_labels =input_data.get_list_of_filesnlabels('list/test.list')
         np_mean = np.load('./models/crop_mean.npy').reshape([c3d_model.NUM_FRAMES_PER_CLIP, c3d_model.CROP_SIZE, c3d_model.CROP_SIZE, 3])
 
-
-        train_file_start_position = 0
-        test_file_start_position = 0
-        ntrainbatches = int(len(train_filenames)/FLAGS.batch_size)
-        ntestbatches = int(len(test_filenames)/FLAGS.batch_size)
         random.seed(FLAGS.randomseed)
+
         if FLAGS.max_steps is not 0:
+            ntrainbatches = int(len(train_filenames) / FLAGS.batch_size)
             for step in xrange(FLAGS.max_steps):
                 print '-'*32
                 start_time = time.time()
@@ -310,15 +336,16 @@ def run_training():
                     RGB=FLAGS.rgb
                 )
 
-                sess.run(train_op, feed_dict={
+                _,batch_acc = sess.run([train_op, accuracy],feed_dict={
                     images_placeholder: tr_images,
                     labels_placeholder: tr_labels
                 })
                 duration = time.time() - start_time
-                print('Step {:d} \t time: {:.3f} sec, # of samples: {:d}'.format(step, duration,tr_labels.shape[0]))
+                print('Step {:d} \t time: {:.3f}, # of samples: {:d}, # of corrected: {:d}'.
+                      format(step, duration, tr_labels.shape[0],batch_acc*tr_labels.shape[0]))
 
-                if (step+1) % 100 == 0 or (step + 1) == FLAGS.max_steps:
-                    saver.save(sess, os.path.join(model_save_dir, 'c3d_ucf_model'), global_step=step)
+                if (step+1) % 1000 == 0 or (step + 1) == FLAGS.max_steps:
+                    saver.save(sess, os.path.join(c.MODEL_SAVE_DIR, 'c3d_ucf_model'), global_step=step)
 
                     print('Test Data Eval:')
                     test_acc = performance_eval(sess, accuracy, images_placeholder, labels_placeholder,
