@@ -2,6 +2,7 @@
 
 ## Disclaimer:
 This set of code is adapted from https://github.com/hx173149/C3D-tensorflow with modifications. I should have forked it but I'm too lazy and stupid.
+
 If there is any copyright violation, please notify zijwei@cs.stonybrook.edu to delete
 
 ## Modifications:
@@ -17,7 +18,8 @@ This code is trying to improve the performance reported by @hx173149. Here I'm u
 |---|---|
 |   0.93| 0.91   |
 
-This is higher than both the results posed on https://github.com/hx173149/C3D-tensorflow (~.72) and in the C3D paper (.85)
+This is higher than both the results posed on https://github.com/hx173149/C3D-tensorflow (~.72) and in the C3D paper (.85).
+
 I double checked without noticing any bugs. But if you do find one, please let me know.
 
 ## Dependences
