@@ -35,6 +35,7 @@ flags.DEFINE_integer('max_steps', 5000, 'Number of steps to run trainer, if 0, t
 flags.DEFINE_integer('batch_size', 10, 'Batch size.')
 flags.DEFINE_integer('gpu_id', None, 'id of GPU')
 flags.DEFINE_integer('randomseed', 0, 'random seed to produce reproducable results')
+flags.DEFINE_boolean('rgb', True, 'If data should be loaded as RGB[True] or BGR')
 # flags.DEFINE_boolean('testonly', False, 'If only testing without training[False]')
 FLAGS = flags.FLAGS
 MOVING_AVERAGE_DECAY = 0.9999
@@ -140,6 +141,7 @@ def performance_eval(sess, tf_acc, images_placeholder, labels_placeholder,file_l
             np_mean=np_mean,
             num_frames_per_clip=c3d_model.NUM_FRAMES_PER_CLIP,
             crop_size=c3d_model.CROP_SIZE,
+            RGB= FLAGS.rgb
         )
         if labels_data.size:  # check on nparray
             batch_acc = sess.run(
@@ -304,6 +306,7 @@ def run_training():
                     np_mean= np_mean,
                     num_frames_per_clip=c3d_model.NUM_FRAMES_PER_CLIP,
                     crop_size=c3d_model.CROP_SIZE,
+                    RGB= FLAGS.rgb
                 )
 
                 sess.run(train_op, feed_dict={

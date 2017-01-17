@@ -21,10 +21,11 @@ from __future__ import print_function
 import os
 # from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
-import PIL.Image as Image
+# import PIL.Image as Image
+from scipy.ndimage  import imread
 import random
 import numpy as np
-# import cv2
+import cv2
 from scipy.misc import imresize
 # import time
 import glob
@@ -51,6 +52,7 @@ def get_list_of_filesnlabels(list_file):
     idxs = range(len(file_names))
     return idxs, file_names, labels
 
+#todo check if need reverse.
 def get_frames_data(dirname, num_frames_per_clip=16):
     ''' Given a directory containing extracted frames, return a video clip of
   (num_frames_per_clip) consecutive frames as a list of np arrays '''
@@ -72,39 +74,47 @@ def get_frames_data(dirname, num_frames_per_clip=16):
 
     selectedimagenames=fullimagenames[start_idx:start_idx+num_frames_per_clip]
     for single_filename in selectedimagenames:
-        img = Image.open(single_filename)
-        img_data = np.array(img)
-        ret_arr.append(img_data)
+        # img = Image.open(single_filename)
+        # avoid transfering back and forth
+        # img_data = np.array(img)
+        img = imread(single_filename, mode='RGB')
+        ret_arr.append(img)
     return ret_arr, start_idx
 
 
-def read_clip_and_label(filenames, labels, batch_size, np_mean, num_frames_per_clip=16, crop_size=112):
+def read_clip_and_label(filenames, labels, batch_size, np_mean, num_frames_per_clip=16, crop_size=112, RGB = True):
     data = []
     label = []
     for file_idx,dirname in enumerate(filenames):
         # print("Loading a video clip from {}...".format(dirname))
         tmp_data, _ = get_frames_data(dirname, num_frames_per_clip)
-        img_datas = []
+        img_seq = []
         if tmp_data:
             for j in xrange(len(tmp_data)):
-                img = Image.fromarray(tmp_data[j].astype(np.uint8))
-                if (img.width > img.height):
-                    scale = float(crop_size) / float(img.height)
-                    img = np.array(imresize(np.array(img), (int(img.width * scale + 1), crop_size))).astype(
-                        np.float32)
+                img = np.array(tmp_data[j],np.float32)
+                img_width = img.shape[1]
+                img_height = img.shape[0]
+                if (img_width > img_height):
+                    scale = float(crop_size) / float(img_height)
+                    img = cv2.resize(np.array(img), (int(img_width * scale + 1), crop_size))
                 else:
-                    scale = float(crop_size) / float(img.width)
-                    img = np.array(imresize(np.array(img), (crop_size, int(img.height * scale + 1)))).astype(
-                        np.float32)
+                    scale = float(crop_size) / float(img_width)
+                    img = cv2.resize(np.array(img), (crop_size, int(img_height * scale + 1)))
 
                 img = img[int((img.shape[0] - crop_size) / 2): int((img.shape[0] - crop_size) / 2) + crop_size,
-                       int((img.shape[1] - crop_size) / 2):int((img.shape[1] - crop_size) / 2) + crop_size, :] - np_mean[j]
-                img_datas.append(img)
-            data.append(img_datas)
+                       int((img.shape[1] - crop_size) / 2):int((img.shape[1] - crop_size) / 2) + crop_size, :]
+
+                if RGB:
+                    img -= np_mean[j]
+                else:
+                    # if not RGB, then BGR, reverse the order
+                    img = img[:, :, ::-1]
+                    img -= np_mean[j]
+
+                img_seq.append(img)
+            data.append(img_seq)
             label.append(labels[file_idx])
-            # label.append(int(tmp_label))
-            # batch_index = batch_index + 1
-            # read_dirnames.append(dirname)
+
 
     #todo: pad (duplicate) data/label if less than batch_size, here might be the reason why the low performance: data are repeated
     # valid_len = len(data)
