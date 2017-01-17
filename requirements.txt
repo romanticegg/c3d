@@ -1,4 +1,5 @@
 tensorflow
 scipy
-PIL
-*scikit-image
+#PIL
+opencv (`conda install opencv` will do )
+#*scikit-image
