@@ -1,5 +1,35 @@
 # C3D-tensorflow
 
+## Disclaimer:
+This set of code is adapted from https://github.com/hx173149/C3D-tensorflow with modifications. I should have forked it but I'm too lazy and stupid.
+If there is any copyright violation, please notify zijwei@cs.stonybrook.edu to delete
+
+## Modifications:
+1. The data loading process
+2. Image loaders
+3. options on RGB or BGR Image
+4. In order to fix the uncertainties, no random sampling for frames was used during testing and training. the starting frame is (#allframes-samplelength)/2
+
+## Introduction
+This code is trying to improve the performance reported by @hx173149. Here I'm using the provided model without any modification. The performance, however, on UCF101 is as below:
+
+|training (~9K)  | Testing (~3.7K)   |  
+|---|---|
+|   0.93| 0.91   |
+
+This is higher than both the results posed on https://github.com/hx173149/C3D-tensorflow (~.72) and in the C3D paper (.85)
+I double checked without noticing any bugs. But if you do find one, please let me know.
+
+## Dependences
+1. tensorflow
+2. opencv (conda install opencv)
+3. scipy.ndimage
+4. [PIL] is **not** necessary
+
+
+----------------------------------------------------------------------------------
+**Below are from the original post:**
+
 ## Requirements:
 
 1. You must have installed the following two python libs:
