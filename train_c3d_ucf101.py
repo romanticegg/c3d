@@ -341,8 +341,8 @@ def run_training():
                     labels_placeholder: tr_labels
                 })
                 duration = time.time() - start_time
-                print('Step {:d} \t time: {:.3f}, # of samples: {:d}, # of corrected: {:d}'.
-                      format(step, duration, tr_labels.shape[0],batch_acc*tr_labels.shape[0]))
+                print('Step {:d} \t time: {:.3f}, # of samples: {:d}, accuracy: {:.3f}'.
+                      format(step, duration, tr_labels.shape[0], batch_acc))
 
                 if (step+1) % 1000 == 0 or (step + 1) == FLAGS.max_steps:
                     saver.save(sess, os.path.join(c.MODEL_SAVE_DIR, 'c3d_ucf_model'), global_step=step)
