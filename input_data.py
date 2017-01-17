@@ -66,7 +66,7 @@ def read_clip_and_label(dirnames, labels, np_mean, num_frames_per_clip=16, crop_
 
     for s_label, s_dirname in zip(labels,dirnames):
         img_seq = []
-        raw_data, _ = get_frames_data(s_dirname, num_frames_per_clip, isRGB=RGB)
+        raw_data= get_frames_data(s_dirname, num_frames_per_clip, isRGB=RGB)
         if raw_data:
             assert len(raw_data) == num_frames_per_clip
             for j in xrange(num_frames_per_clip):
