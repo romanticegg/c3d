@@ -60,10 +60,19 @@ More detail take a look on [this](http://www.python-course.eu/deep_copy.php)
 
 Note the operation `list2 = list[:]` is a shallow copy
 
-## build on function:
+## build in function:
 1. `map()`: Apply function to every item of iterable and return a list of the results
 2. `zip()`: a usage that illustrates the function is as follows:
 
 ```Python
   x,y = zip(*zip(x,y))
 ```
+
+## Understanding arguments in `tf.train.shuffle_batch`
+
+--------------
+`enqueue_many`:
+
+If `enqueue_many` is False, tensors is assumed to represent a single example. An input tensor with shape `[x, y, z]` will be output as a tensor with shape `[batch_size, x, y, z]`.
+
+If `enqueue_many` is True, tensors is assumed to represent a batch of examples, where the first dimension is indexed by example, and all members of tensors should have the same size in the first dimension. If an input tensor has shape `[*, x, y, z]`, the output will have shape `[batch_size, x, y, z]`.

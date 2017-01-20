@@ -3,10 +3,10 @@ import tensorflow as tf
 import utils
 import os
 import sys
-from six.moves import urllib
 import tarfile
 import tf_easy_dir
 NUM_CLASSES = 10
+import cifar10_inputs
 
 def _variable_on_cpu(name, shape, initializer):
     with tf.device('/cpu:0'):
@@ -56,22 +56,20 @@ def _score_layer(bottom, name, num_classes):
         return activation
 
 
-class model:
 
-    def inference(images):
-        with tf.variable_scope('conv1') as scope:
-            pass
 
 
 def train():
     # create a model:
     with tf.Graph().as_default():
         global_steps = tf.Variable(name='gstep', initial_value= 0, trainable=False)
-        images = tf.Variable(tf.ones(shape=[10,32,32,3]), dtype=tf.float32, name='input')
+        [batch_images, batch_labels] = cifar10_inputs.inputs(FLAGS.data_dir, FLAGS.batch_size, isTraining=True, isRandom=False)
+
+        # images = tf.Variable(tf.ones(shape=[10,32,32,3]), dtype=tf.float32, name='input')
         # images = tf.placeholder(dtype=tf.float32, shape=None, name='input_images')
         # labels = tf.placeholder(dtype=tf.int32, shape=None, name= 'labels')
-        print 'size of input: [{:s}]'.format(', '.join(map(str, images.get_shape().as_list())))
-
+        print 'size of image input: [{:s}]'.format(', '.join(map(str, batch_images.get_shape().as_list())))
+        print 'size of labels : [{:s}]'.format(', '.join(map(str, batch_labels.get_shape().as_list())))
         # batch_sz = tf.shape(images)
         # tf.Print(batch_sz, [batch_sz],)
         batch_sz = images.get_shape().as_list()[0] # current batch size?
@@ -195,6 +193,7 @@ flags = tf.app.flags
 flags.DEFINE_string('data_dir', '/Users/zijwei/Dev/datasets/cifar10-batch', 'directory to save training data[/Users/zijwei/Dev/datasets]')
 flags.DEFINE_string("save_name", None, "Directory in which to save output of this run[Currentdate such as 2017-01...]")
 flags.DEFINE_boolean('rewrite', False, 'If rewrite training logs to save_name[False]')
+flags.DEFINE_integer('batch_size', 10, 'training batch size [10]')
 FLAGS = flags.FLAGS
 
 
@@ -208,6 +207,7 @@ def main(argv = None):
     save_locations = tf_easy_dir.tf_easy_dir(save_dir=save_dir)
     if FLAGS.rewrite:
         save_locations.clear_save_name()
+
 
 
 
