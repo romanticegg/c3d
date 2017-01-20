@@ -210,26 +210,26 @@ def train():
 DATA_URL = 'http://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz'
 
 
-#no need
-def download(save_dir, rewrite=False):
-    save_dir = utils.get_dir()
-    if rewrite:
-        utils.clear_dir(save_dir)
-
-    filename = DATA_URL.split(os.pathsep)[-1]
-    filepath = os.path.join(save_dir, filename)
-    if not os.path.isfile(filepath):
-        def _progress(count, block_size, total_size):
-            sys.stdout.write('\r>> Downloading %s %.1f%%' % (filename,
-                                                             float(count * block_size) / float(total_size) * 100.0))
-            sys.stdout.flush()
-
-        filepath, _ = urllib.request.urlretrieve(DATA_URL, filepath, _progress)
-        print()
-        statinfo = os.stat(filepath)
-        print('Successfully downloaded', filename, statinfo.st_size, 'bytes.')
-
-    tarfile.open(filepath, 'r:gz').extractall(save_dir)
+#fixme: no need right now.
+# def download(save_dir, rewrite=False):
+#     save_dir = utils.get_dir()
+#     if rewrite:
+#         utils.clear_dir(save_dir)
+#
+#     filename = DATA_URL.split(os.pathsep)[-1]
+#     filepath = os.path.join(save_dir, filename)
+#     if not os.path.isfile(filepath):
+#         def _progress(count, block_size, total_size):
+#             sys.stdout.write('\r>> Downloading %s %.1f%%' % (filename,
+#                                                              float(count * block_size) / float(total_size) * 100.0))
+#             sys.stdout.flush()
+#
+#         filepath, _ = urllib.request.urlretrieve(DATA_URL, filepath, _progress)
+#         print()
+#         statinfo = os.stat(filepath)
+#         print('Successfully downloaded', filename, statinfo.st_size, 'bytes.')
+#
+#     tarfile.open(filepath, 'r:gz').extractall(save_dir)
 
 
 flags = tf.app.flags
