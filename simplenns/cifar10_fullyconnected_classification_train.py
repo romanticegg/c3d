@@ -5,7 +5,7 @@ import tf_utils
 import os
 import sys
 import tarfile
-import tf_easy_dir
+from .. import tf_easy_dir
 NUM_CLASSES = 10
 import cifar10_inputs
 import numpy as np
