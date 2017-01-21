@@ -68,12 +68,12 @@ def train():
     with tf.Graph().as_default():
         print 'Graph initialization'
         global_steps = tf.Variable(name='gstep', initial_value= 0, trainable=False)
-        # [batch_images, batch_labels] = cifar10_inputs.inputs(FLAGS.data_dir, FLAGS.batch_size, isTraining=True, isRandom=False)
+        [batch_images, batch_labels] = cifar10_inputs.inputs(FLAGS.data_dir, FLAGS.batch_size, isTraining=True, isRandom=False)
         # fixme: for debug use here to see if the stuck is in the data processing step
         # [batch_images, batch_labels] = cifar10_inputs.inputs(FLAGS.data_dir, FLAGS.batch_size, isTraining=True, isRandom=False)
-
-        batch_images = tf.Variable(tf.random_uniform(shape=[10,32,32,3]), dtype=tf.float32, name='input', trainable=False)
-        batch_labels = tf.Variable(tf.random_uniform(shape=[10],dtype=tf.int32, minval=0, maxval=1),  name='label', trainable=False)
+        #
+        # batch_images = tf.Variable(tf.random_uniform(shape=[10,32,32,3]), dtype=tf.float32, name='input', trainable=False)
+        # batch_labels = tf.Variable(tf.random_uniform(shape=[10],dtype=tf.int32, minval=0, maxval=1),  name='label', trainable=False)
         # images = tf.placeholder(dtype=tf.float32, shape=None, name='input_images')
         # labels = tf.placeholder(dtype=tf.int32, shape=None, name= 'labels')
         print 'size of image input: [{:s}]'.format(', '.join(map(str, batch_images.get_shape().as_list())))
@@ -214,6 +214,8 @@ def train():
 
         with tf.Session(config = config) as sess:
             sess.run(tf.global_variables_initializer())
+            #fixme: important here!
+            tf.train.start_queue_runners(sess=sess)
             for i in xrange(FLAGS.max_steps):
                 print 'Starting step {:d}'.format(i)
                 _, top_k_, = sess.run([train_op, top_k])
