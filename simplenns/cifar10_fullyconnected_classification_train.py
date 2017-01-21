@@ -237,6 +237,7 @@ flags.DEFINE_string('data_dir', '/Users/zijwei/Dev/datasets/cifar10-batch', 'dir
 flags.DEFINE_string("save_name", None, "Directory in which to save output of this run[Currentdate such as 2017-01...]")
 flags.DEFINE_boolean('rewrite', False, 'If rewrite training logs to save_name[False]')
 flags.DEFINE_integer('batch_size', 10, 'training batch size [10]')
+flags.DEFINE_integer('max_steps', 5000, 'The max steps of learning')
 FLAGS = flags.FLAGS
 
 
