@@ -149,6 +149,7 @@ def train():
             # The total loss is defined as the cross entropy loss plus all of the weight
             # decay terms (L2 loss).
             total_loss = tf.add_n(tf.get_collection('losses'), name='total_loss')
+            print('Done loss layer')
             # classification preidiction results
             # pred = tf.argmax(softmax, axis=3)
 
@@ -196,6 +197,7 @@ def train():
                 train_op = tf.no_op(name='train')
 
             top_k = tf.nn.in_top_k(softmax, batch_labels ,1)
+            print('Done optimization layer')
 
         if FLAGS.gpu_id is not None:
             os.environ['CUDA_VISIBLE_DEVICES'] = str(FLAGS.gpu_id)
@@ -210,6 +212,7 @@ def train():
         with tf.Session(config = config) as sess:
             sess.run(tf.global_variables_initializer())
             for i in xrange(FLAGS.max_steps):
+                print 'Starting step {:d}'.format(i)
                 _, top_k_, = sess.run([train_op, top_k])
                 print '{:d}: precision:[{:d} / {:d}]'.format(i, np.sum(top_k_), FLAGS.batch_size)
 
