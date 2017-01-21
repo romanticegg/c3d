@@ -40,7 +40,7 @@ def decode_single_image(filename_queue):
                              [result.depth, result.height, result.width])
     # Convert from [depth, height, width] to [height, width, depth].
     result.uint8image = tf.transpose(depth_major, [1, 2, 0])
-    return result
+    return resultps
 
 # given a directory, return batch directly fed into the graph
 def inputs(data_dir, batch_size, isTraining=True, isRandom=False):
@@ -78,11 +78,12 @@ def inputs(data_dir, batch_size, isTraining=True, isRandom=False):
 
     float_image = tf.image.per_image_standardization(resized_image)
 
-    min_fraction_of_examples_in_queue = 0.1
-    min_queue_examples = int(num_examples_per_epoch *
-                             min_fraction_of_examples_in_queue)
+    # min_fraction_of_examples_in_queue = 0.1
+    # min_queue_examples = int(num_examples_per_epoch *
+    #                          min_fraction_of_examples_in_queue)
 
-    num_preprocess_thread = 8
+    min_queue_examples = 32
+    num_preprocess_thread = 16
 
     if isTraining:
         batch_images, batch_labels = tf.train.shuffle_batch([float_image, read_input.label], batch_size= batch_size,
