@@ -40,7 +40,7 @@ def decode_single_image(filename_queue):
                              [result.depth, result.height, result.width])
     # Convert from [depth, height, width] to [height, width, depth].
     result.uint8image = tf.transpose(depth_major, [1, 2, 0])
-    return resultps
+    return result
 
 # given a directory, return batch directly fed into the graph
 def inputs(data_dir, batch_size, isTraining=True, isRandom=False):
