@@ -197,9 +197,19 @@ def train():
 
             top_k = tf.nn.in_top_k(softmax, batch_labels ,1)
 
-        with tf.Session() as sess:
+        if FLAGS.gpu_id is not None:
+            os.environ['CUDA_VISIBLE_DEVICES'] = str(FLAGS.gpu_id)
+
+            config = tf.ConfigProto()
+            config.gpu_options.allow_growth = True
+            config.gpu_options.per_process_gpu_memory_fraction = 0.6
+            config.allow_soft_placement = True
+        else:
+            config = tf.ConfigProto()
+
+        with tf.Session(config = config) as sess:
             sess.run(tf.global_variables_initializer())
-            for i in xrange(4):
+            for i in xrange(FLAGS.max_steps):
                 _, top_k_, = sess.run([train_op, top_k])
                 print '{:d}: precision:[{:d} / {:d}]'.format(i, np.sum(top_k_), FLAGS.batch_size)
 
@@ -239,6 +249,7 @@ flags.DEFINE_string("save_name", None, "Directory in which to save output of thi
 flags.DEFINE_boolean('rewrite', False, 'If rewrite training logs to save_name[False]')
 flags.DEFINE_integer('batch_size', 10, 'training batch size [10]')
 flags.DEFINE_integer('max_steps', 5000, 'The max steps of learning')
+flags.DEFINE_integer('gpu_id', None, 'the ID of the GPU to run on[None]')
 FLAGS = flags.FLAGS
 
 
