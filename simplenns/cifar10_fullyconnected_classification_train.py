@@ -73,7 +73,7 @@ def train():
         # [batch_images, batch_labels] = cifar10_inputs.inputs(FLAGS.data_dir, FLAGS.batch_size, isTraining=True, isRandom=False)
 
         batch_images = tf.Variable(tf.random_uniform(shape=[10,32,32,3]), dtype=tf.float32, name='input')
-        batch_labels = tf.Variable(tf.random_uniform(shape=[10],dtype=tf.int64, minval=0, maxval=1),  name='label')
+        batch_labels = tf.Variable(tf.random_uniform(shape=[10],dtype=tf.int32, minval=0, maxval=1),  name='label')
         # images = tf.placeholder(dtype=tf.float32, shape=None, name='input_images')
         # labels = tf.placeholder(dtype=tf.int32, shape=None, name= 'labels')
         print 'size of image input: [{:s}]'.format(', '.join(map(str, batch_images.get_shape().as_list())))
