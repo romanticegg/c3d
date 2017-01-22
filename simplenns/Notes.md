@@ -76,3 +76,23 @@ Note the operation `list2 = list[:]` is a shallow copy
 If `enqueue_many` is False, tensors is assumed to represent a single example. An input tensor with shape `[x, y, z]` will be output as a tensor with shape `[batch_size, x, y, z]`.
 
 If `enqueue_many` is True, tensors is assumed to represent a batch of examples, where the first dimension is indexed by example, and all members of tensors should have the same size in the first dimension. If an input tensor has shape `[*, x, y, z]`, the output will have shape `[batch_size, x, y, z]`.
+
+## Never forget to run `tf.train.start_queue_runners(sess=sess)` when using Queue stuff to load data
+The potential problem:
+```
+W tensorflow/core/kernels/queue_base.cc:294] _0_input_producer: Skipping cancelled enqueue attempt with queue not closed
+ERROR:tensorflow:Exception in QueueRunner: Attempted to use a closed Session.
+ERROR:tensorflow:Exception in QueueRunner: Attempted to use a closed Session.
+ERROR:tensorflow:Exception in QueueRunner: Attempted to use a closed Session.
+ERROR:tensorflow:Exception in QueueRunner: Attempted to use a closed Session.
+ERROR:tensorflow:Exception in QueueRunner: Attempted to use a closed Session.
+ERROR:tensorflow:Exception in QueueRunner: Attempted to use a closed Session.
+ERROR:tensorflow:Exception in QueueRunner: Attempted to use a closed Session.
+```
+
+
+## The problem of `Your branch is ahead of 'origin/master' by 3 commits`
+
+- In a good workflow your remote copy of master should be the good one while your local copy of master is just a copy of the one in remote. Using this workflow you'll never get this message again.
+- If you work in another way and your local changes should be pushed then just git push origin assuming origin is your remote
+- If your local changes are bad then just remove them or reset your local master to the state on remote `git reset --hard origin/master`
