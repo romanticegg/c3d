@@ -63,9 +63,9 @@ def _score_layer(bottom, name, num_classes):
 
 
 
-def train():
+def train(save_locations):
     # create a model:
-    with tf.Graph().as_default():
+    with tf.Graph().as_default() as graph:
         print 'Graph initialization'
         global_steps = tf.Variable(name='gstep', initial_value= 0, trainable=False)
         [batch_images, batch_labels] = cifar10_inputs.inputs(FLAGS.data_dir, FLAGS.batch_size, isTraining=True, isRandom=False)
@@ -172,7 +172,7 @@ def train():
                                             decay_steps,
                                             LEARNING_RATE_DECAY_FACTOR,
                                             staircase=True)
-            # tf.scalar_summary('learning_rate', lr)
+            tf.summary.scalar('learning_rate', lr)
 
             # Generate moving averages of all losses and associated summaries.
             # loss_averages_op = _add_loss_summaries(total_loss)
@@ -212,6 +212,15 @@ def train():
         else:
             config = tf.ConfigProto()
 
+
+        # summary, saver and stuff:
+
+        summaries = tf.summary.merge_all()
+        summary_writer = tf.summary.FileWriter(save_locations.summary_save_dir, graph=graph)
+
+        saver = tf.train.Saver(tf.global_variables())
+
+
         with tf.Session(config = config) as sess:
             sess.run(tf.global_variables_initializer())
             #fixme: important here!
@@ -223,6 +232,12 @@ def train():
 
                 # print '{:d}: shape-output:[{:s}], shape-pred: [{:s}]'.format(i, ', '.join(map(str, o_.shape)), ', '.join(map(str, pred_.shape)) )
                 # print '{:d}: shape-output:[{:s}]'.format(i, ', '.join(map(str, o_.shape)))
+                if i % 10 ==0:
+                    summaries_ = sess.run(summaries)
+                    summary_writer.add_summary(summaries_, global_step=i)
+                if i % 1000 == 0:
+                    checkpoint_path = os.path.join(save_locations.model_save_dir, 'model.ckpt')
+                    saver.save(sess, checkpoint_path, global_step=i)
 
             # output = sess.run(softmax,feed_dict={images:})
 
@@ -263,17 +278,19 @@ FLAGS = flags.FLAGS
 
 
 # def main(argv = None):
-#     if not FLAGS.save_name:
-#         save_dir = utils.get_date_str()
-#     else:
-#         save_dir = FLAGS.save_name
-#
-#     save_locations = tf_easy_dir.tf_easy_dir(save_dir=save_dir)
-#     if FLAGS.rewrite:
-#         save_locations.clear_save_name()
+
 
 def main(argv = None):
-    train()
+    if not FLAGS.save_name:
+        save_dir = utils.get_date_str()
+    else:
+        save_dir = FLAGS.save_name
+
+    save_locations = tf_easy_dir.tf_easy_dir(save_dir=save_dir)
+    if FLAGS.rewrite:
+        save_locations.clear_save_name()
+
+    train(save_locations)
 
 
 
