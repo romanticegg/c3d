@@ -96,3 +96,11 @@ ERROR:tensorflow:Exception in QueueRunner: Attempted to use a closed Session.
 - In a good workflow your remote copy of master should be the good one while your local copy of master is just a copy of the one in remote. Using this workflow you'll never get this message again.
 - If you work in another way and your local changes should be pushed then just git push origin assuming origin is your remote
 - If your local changes are bad then just remove them or reset your local master to the state on remote `git reset --hard origin/master`
+
+## get add . commit and push in one line:
+
+function lazypush() {
+    git add .
+    git commit -a -m "$1"
+    git push origin/master
+}
