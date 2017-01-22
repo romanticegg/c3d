@@ -3,3 +3,5 @@ scipy
 #PIL
 opencv (`conda install opencv` will do )
 #*scikit-image
+
+
