@@ -217,7 +217,7 @@ def train():
             #fixme: important here!
             tf.train.start_queue_runners(sess=sess)
             for i in xrange(FLAGS.max_steps):
-                print 'Starting step {:d}'.format(i)
+                # print 'Starting step {:d}'.format(i)
                 _, top_k_, = sess.run([train_op, top_k])
                 print '{:d}: precision:[{:d} / {:d}]'.format(i, np.sum(top_k_), FLAGS.batch_size)
 
