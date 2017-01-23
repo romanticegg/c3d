@@ -104,3 +104,70 @@ function lazypush() {
     git commit -a -m "$1"
     git push origin/master
 }
+
+## Understanding the elements of Tensorflow:
+
+### Tensor
+>A Tensor object is a symbolic handle to the result of an operation, but does not actually hold the values of the operation's output
+
+Understanding tensor as a handle to the output of the operation, something like function handle, when executing this function in `sess.run`, the value will be returned.
+
+The tensor and operation is closely connected. A Graph in tensorflow is actually a list of operations. Let's say the name of an operation is 'add', the corresponding tensor is to the output of operation, which can be retrieved by running `sess.run('add:0')`
+
+#### Some knowledges of a tensor:
+- `rank`: different from the mathematically concept of a tensor. A rank of a tensor is the number of dimensions of a tensor, for example, a tensor of shape `[2,3]` is rank 2, a scalar is rank `0`
+
+
+
+### Variable
+Do the following:
+```Python
+tf.reset_default_graph()
+value = tf.Variable(tf.ones_initializer(()))
+print [n.name for n in tf.get_default_graph().as_graph_def().node]
+```
+You will see Variable contains a list of operations such as `assign` and `read`.
+My understanding of the Variable is that the variable is connected with a memory that stores a state. It's a special group of operation
+
+>Variables are in-memory buffers containing tensors. They must be explicitly initialized and can be saved to disk during and after training. You can later restore saved values to exercise or analyze the model.
+
+#### Variable initialization
+When you create a Variable you pass a Tensor as its initial value to the `Variable()` constructor. TensorFlow provides a collection of ops that produce tensors often used for initialization from constants or random values.
+
+Calling `tf.Variable()` adds several **sets of ops** to the graph:
+
+- A variable op that holds the variable value. `Variable`
+- An initializer op that sets the variable to its initial value. This is actually a tf.assign op. 'Variable/assign'
+- The ops for the initial value, such as the `tf.ones_initializer()` in the example are also added to the graph.
+
+#### Variable placement:
+In some code with say the variable is declared on CPU, for example the sample code block excerpted from cifar example:
+```Python
+def _variable_on_cpu(name, shape, initializer):
+    with tf.device('/cpu:0'):
+        var = tf.get_variable(name=name, shape=shape, initializer=initializer)
+    return var
+```
+Operations that mutate a variable, such as v.assign() and the parameter update operations in a tf.train.Optimizer must run on the same device as the variable. Incompatible device placement directives will be ignored when creating these operations.
+It is preferrable to put the variables on cpu if the P2P on GPU is not activated.
+CPU is like the core to manage data. GPU is running everything, but the data should be on CPU
+>All variables are pinned to the CPU and accessed via tf.get_variable() in order to share them in a multi-GPU version. See how-to on Sharing Variables.
+
+
+#### Variables collections
+- `LocalVariables`
+- 'GlobalVariables'
+
+
+####  Saver
+`tf.train.Saver` adds two **`ops`** `save` and `restore` to the graph for all or specified list of variables. When the op is running, it writes stuff into the file
+
+#### Session
+Session provides a running environment for the graph and variables. When we are talking about the values of variables, we are talking about it in the scope of a session. The values and the containers will be destoried outside of the session, that's the reason why the `saver.restore` and `saver.save` have to be run with a sess argument
+
+#### Different ways of initializing a variable:
+See [here](https://www.tensorflow.org/api_docs/python/constant_op/)
+
+## Using `tf.app.flags.FLAGS`
+
+if this is used: `FLAGS = tf.app.flags.FLAGS`, then FLAGS can be used as a global environmental variable safely.

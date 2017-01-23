@@ -2,9 +2,7 @@ import tensorflow as tf
 import os
 
 
-# flags =tf.app.flags
-# flags.DEFINE_string('data_dir', '/Users/zijwei/Dev/datasets/cifar10-batch', 'directory to save training data[/Users/zijwei/Dev/datasets]')
-
+FLAGS =tf.app.flags.FLAGS
 
 # Global constants describing the CIFAR-10 data set.
 IMAGE_SIZE = 32
@@ -42,8 +40,10 @@ def decode_single_image(filename_queue):
     result.uint8image = tf.transpose(depth_major, [1, 2, 0])
     return result
 
+
 # given a directory, return batch directly fed into the graph
 def inputs(data_dir, batch_size, isTraining=True, isRandom=False):
+
     if isTraining:
         filenames = [os.path.join(data_dir, 'data_batch_{:d}.bin'.format(i)) for i in xrange(1,6)]
         num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN

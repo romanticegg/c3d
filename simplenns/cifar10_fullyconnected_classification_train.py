@@ -223,8 +223,15 @@ def train(save_locations):
 
         with tf.Session(config = config) as sess:
             sess.run(tf.global_variables_initializer())
-            #fixme: important here!
+
+            #note: important here!
             tf.train.start_queue_runners(sess=sess)
+
+            #todo: add dataloader
+            if FLAGS.model:
+                saver.restore(sess, FLAGS.model)
+
+
             for i in xrange(FLAGS.max_steps):
                 # print 'Starting step {:d}'.format(i)
                 _, top_k_, = sess.run([train_op, top_k])
@@ -244,7 +251,7 @@ def train(save_locations):
 DATA_URL = 'http://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz'
 
 
-#fixme: no need right now.
+#note: no need right now.
 # def download(save_dir, rewrite=False):
 #     save_dir = utils.get_dir()
 #     if rewrite:
@@ -273,6 +280,10 @@ flags.DEFINE_boolean('rewrite', False, 'If rewrite training logs to save_name[Fa
 flags.DEFINE_integer('batch_size', 10, 'training batch size [10]')
 flags.DEFINE_integer('max_steps', 5000, 'The max steps of learning')
 flags.DEFINE_integer('gpu_id', None, 'the ID of the GPU to run on[None]')
+flags.DEFINE_string('model', None, 'the model to load, if None, training from scratch[None], can either be a path to '
+                                   'a single .model file or a pattern that fit with .meta, .index '
+                                   '(e.g. ./models/c3d_ucf_model-99 for 3 files like XXX.meta, XXX.index and '
+                                   'XXX.data-00000-of-00001)')
 FLAGS = flags.FLAGS
 
 
