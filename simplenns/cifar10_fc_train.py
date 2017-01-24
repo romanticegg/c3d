@@ -5,6 +5,7 @@ import utils
 import tf_utils
 import cifar10_inputs
 import os
+import numpy as np
 
 flags = tf.app.flags
 flags.DEFINE_string('data_dir', '/Users/zijwei/Dev/datasets/cifar10-batch', 'directory to save training data[/Users/zijwei/Dev/datasets]')
@@ -20,9 +21,9 @@ FLAGS = flags.FLAGS
 
 def train():
     if not FLAGS.save_name:
-        save_dir = utils.get_date_str()
+        save_dir = os.path.join('Save', utils.get_date_str())
     else:
-        save_dir = FLAGS.save_name
+        save_dir = os.path.join('Save', FLAGS.save_name)
 
     save_locations = tf_easy_dir.tf_easy_dir(save_dir=save_dir)
     if FLAGS.rewrite:
@@ -30,7 +31,7 @@ def train():
 
     with tf.Graph().as_default() as graph:
         global_step =tf.get_variable(name='gstep', initializer=tf.constant(0), trainable=False)
-        batch_images, batch_labels = cifar10_inputs.inputs(FLAGS.data_dir, FLAGS.batch_size, isTraining=True, isRandom=True)
+        batch_images, batch_labels = cifar10_inputs.inputs(FLAGS.data_dir, FLAGS.batch_size, isTraining=True, isRandom=False)
         logits = cifar10_fc.inference(batch_images)
         loss =cifar10_fc.loss(logits=logits, labels=batch_labels)
         train_op = cifar10_fc.train(loss, global_step)
@@ -46,6 +47,8 @@ def train():
             tf.train.start_queue_runners(sess=sess)
             for i in range(FLAGS.max_steps):
                 _, loss_, correct_ones_ = sess.run([train_op, loss, correct_ones])
+
+                assert not np.isnan(loss_), 'Model diverged with loss = NaN, try again'
 
                 # if (i+1) % 10 == 0:
                 print '[{:08d}|{:08d}]\tloss : {:.3f}\t, correct ones [{:d}|{:d}]'.format(i, FLAGS.max_steps,
