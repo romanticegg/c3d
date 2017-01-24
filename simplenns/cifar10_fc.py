@@ -12,12 +12,15 @@ NUM_CLASSES = 10
 
 FLAGS=tf.app.flags.FLAGS
 
-def _print_layer_info(layername, kernel, stride, reslt):
+def _print_layer_info(layername, kernel=None, stride=None, reslt=None):
 
     print 'Layer {:s}'.format(layername)
-    print 'Kernel size [{:s}]'.format(', '.join(map(str, kernel)))
-    print 'Stride size [{:s}]'.format(', '.join(map(str, stride)))
-    print 'Result size [{:s}]'.format(', '.join(map(str, reslt)))
+    if kernel:
+        print 'Kernel size [{:s}]'.format(', '.join(map(str, kernel)))
+    if stride:
+        print 'Stride size [{:s}]'.format(', '.join(map(str, stride)))
+    if reslt:
+        print 'Result size [{:s}]'.format(', '.join(map(str, reslt)))
     print '-' * 32
 
 def inference(images):
@@ -41,7 +44,7 @@ def inference(images):
     pool1 = tf.nn.max_pool(conv1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1],
                                padding='SAME', name='pool1')
     # norm1
-    norm1 = tf.nn.lrn(pool1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
+    norm1 = tf.nn.lrn(pool1, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
                           name='norm1')
 
     # conv2
@@ -61,7 +64,7 @@ def inference(images):
     pool2 = tf.nn.max_pool(conv2, ksize=[1, 3, 3, 1],
                            strides=[1, 2, 2, 1], padding='SAME', name='pool2')
     # norm2
-    norm2 = tf.nn.lrn(pool2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
+    norm2 = tf.nn.lrn(pool2, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
                       name='norm2')
 
     # conv3
@@ -71,13 +74,14 @@ def inference(images):
         # dim = reshape.get_shape()[1].value
         # norm2_shape = norm2.get_shape().as_list()
         weights = variable_with_weight_decay('weights', shape=[8, 8, 64, 384],
-                                             initializer=tf.truncated_normal_initializer(stddev=5e-2),
+                                             initializer=tf.truncated_normal_initializer(stddev=0.04),
                                               wd=0.004)
         conv = tf.nn.conv2d(norm2, weights,[1, 1, 1, 1], padding='VALID')
         biases = variable_on_cpu('biases', [384], tf.constant_initializer(0.1))
         pre_activation = tf.nn.bias_add(conv, biases)
         conv3 = tf.nn.relu(pre_activation, name=scope.name)
         activation_summary(conv3)
+        _print_layer_info('conv3', kernel=[8, 8, 64, 384], stride=[1, 1, 1, 1], reslt=conv3.get_shape().as_list())
 
     #update: added a new normalization,  this lead to bad performance
     # norm3 = tf.nn.lrn(conv3, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
@@ -91,6 +95,7 @@ def inference(images):
         pre_activation = tf.nn.bias_add(conv, biases)
         conv4 = tf.nn.relu(pre_activation, name=scope.name)
         activation_summary(conv4)
+        _print_layer_info('conv4', kernel=[1, 1, 384, 192], stride=[1, 1, 1, 1], reslt=conv4.get_shape().as_list())
 
     # linear layer(WX + b),
     # We don't apply softmax here because
@@ -98,11 +103,14 @@ def inference(images):
     # and performs the softmax internally for efficiency.
     with tf.variable_scope('classification') as scope:
         weights = variable_with_weight_decay('weights', [1, 1, 192, NUM_CLASSES],
-                                             initializer=tf.truncated_normal_initializer(stddev=1 / 192.0), wd=0.0)
+                                             initializer=tf.truncated_normal_initializer(stddev=0.04), wd=0.004)
         biases = variable_on_cpu('biases', [NUM_CLASSES],
-                                  tf.constant_initializer(0.0))
+                                tf.constant_initializer(0.0))
         conv = tf.nn.conv2d(conv4, weights, [1,1,1,1], padding='VALID')
         softmax = tf.nn.bias_add(conv, biases)
+        _print_layer_info('classification', kernel=[1, 1, 192, NUM_CLASSES], stride=[1, 1, 1, 1],
+                          reslt=softmax.get_shape().as_list())
+
 
         #todo: the following are used to deal with shapes with different sizes, to get mean
         softmax = tf.reduce_mean(softmax, axis=1, keep_dims=True)
@@ -125,7 +133,7 @@ def correct_ones(logits, labels):
 
 def loss(logits, labels, isFinalLossOnly=False):
     labels=tf.cast(labels, tf.int64)
-    cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels, name='single_cross_entropy')
+    cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels, name='cross_entropy_per_example')
     cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy')
     tf.add_to_collection('losses', cross_entropy_mean)
     if isFinalLossOnly:
