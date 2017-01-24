@@ -165,14 +165,14 @@ def train(total_loss, global_step, decay_every_n_step=None):
     tf.summary.scalar('learning_rate', lr)
 
     #todo: adding moving averages of losses, as pre-requests for computing gradients
-    loss_averages = tf.train.ExponentialMovingAverage(decay=MOVING_AVERAGE_DECAY)
+    loss_averages = tf.train.ExponentialMovingAverage(decay=0.9)
     loss_list = tf.get_collection('losses')+[total_loss]  # a set of l2 loss, final entropy loss and the sum of all
     loss_averages_op = loss_averages.apply(loss_list)
 
-    #adding all the losses to summary:
-    for s_loss in loss_list:
-        tf.summary.scalar('{:s}(raw)'.format(s_loss.op.name), s_loss)
-        tf.summary.scalar('{:s}(mv)'.format(s_loss.op.name), loss_averages.average(s_loss))
+    #todo: adding all the losses to summary:
+    # for s_loss in loss_list:
+    #     tf.summary.scalar('{:s}(raw)'.format(s_loss.op.name), s_loss)
+    #     tf.summary.scalar('{:s}(mv)'.format(s_loss.op.name), loss_averages.average(s_loss))
 
     with tf.control_dependencies([loss_averages_op]): # note this should be a list even if it is only one element
         opt =tf.train.GradientDescentOptimizer(learning_rate=lr)
