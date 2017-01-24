@@ -84,7 +84,7 @@ def inference(images):
     with tf.variable_scope('conv4') as scope:
         weights = variable_with_weight_decay('weights', shape=[1, 1, 384, 192],
                                               initializer=tf.truncated_normal_initializer(stddev=0.04), wd=0.004)
-        conv = tf.nn.conv2d(norm3, weights,[1, 1, 1, 1], padding='VALID')
+        conv = tf.nn.conv2d(conv3, weights,[1, 1, 1, 1], padding='VALID')
         biases = variable_on_cpu('biases', [192], tf.constant_initializer(0.1))
         pre_activation = tf.nn.bias_add(conv, biases)
         conv4 = tf.nn.relu(pre_activation, name=scope.name)
