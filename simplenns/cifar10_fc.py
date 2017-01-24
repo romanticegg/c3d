@@ -7,8 +7,10 @@ import sys
 import tarfile
 import tf_easy_dir
 from tf_utils import variable_with_weight_decay, variable_on_cpu, activation_summary
+import cifar10_inputs as inputs
 NUM_CLASSES = 10
 
+FLAGS=tf.app.flags.FLAGS
 
 def _print_layer_info(layername, kernel, stride, reslt):
 
@@ -77,13 +79,13 @@ def inference(images):
         conv3 = tf.nn.relu(pre_activation, name=scope.name)
         activation_summary(conv3)
 
-    #update: added a new normalization
+    #update: added a new normalization,  this lead to bad performance
     # norm3 = tf.nn.lrn(conv3, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
     #                   name='norm2')
     # local4
     with tf.variable_scope('conv4') as scope:
         weights = variable_with_weight_decay('weights', shape=[1, 1, 384, 192],
-                                              initializer=tf.truncated_normal_initializer(stddev=0.04), wd=0.004)
+                                             initializer=tf.truncated_normal_initializer(stddev=0.04), wd=0.004)
         conv = tf.nn.conv2d(conv3, weights,[1, 1, 1, 1], padding='VALID')
         biases = variable_on_cpu('biases', [192], tf.constant_initializer(0.1))
         pre_activation = tf.nn.bias_add(conv, biases)
@@ -96,7 +98,7 @@ def inference(images):
     # and performs the softmax internally for efficiency.
     with tf.variable_scope('classification') as scope:
         weights = variable_with_weight_decay('weights', [1, 1, 192, NUM_CLASSES],
-                                            initializer=tf.truncated_normal_initializer(stddev=1 / 192.0), wd=0.0)
+                                             initializer=tf.truncated_normal_initializer(stddev=1 / 192.0), wd=0.0)
         biases = variable_on_cpu('biases', [NUM_CLASSES],
                                   tf.constant_initializer(0.0))
         conv = tf.nn.conv2d(conv4, weights, [1,1,1,1], padding='VALID')
@@ -113,8 +115,10 @@ def inference(images):
 
 
 def correct_ones(logits, labels):
-    pred = tf.cast(tf.nn.in_top_k(logits, labels, k=1), tf.int32)
-    n_corrects = tf.reduce_sum(pred,name='correct_n')
+    correct_prediction = tf.nn.in_top_k(logits, labels, k=1)
+    correct_prediction = tf.cast(correct_prediction, tf.float32)
+    # pred = tf.cast(tf.nn.in_top_k(logits, labels, k=1), tf.float32)
+    n_corrects = tf.reduce_sum(correct_prediction,name='correct_n')
     tf.summary.scalar('correct_ones', n_corrects)
     return n_corrects
 
@@ -143,7 +147,10 @@ LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
 INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
 
 
-def train(total_loss, global_step, decay_every_n_step=10000):
+def train(total_loss, global_step, decay_every_n_step=None):
+    if not decay_every_n_step:
+        num_batches_per_epoch = inputs.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN / FLAGS.batch_size
+        decay_every_n_step = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
 
     lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE, global_step=global_step,
                                     decay_steps=decay_every_n_step, decay_rate=LEARNING_RATE_DECAY_FACTOR)

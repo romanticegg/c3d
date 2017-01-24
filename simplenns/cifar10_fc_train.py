@@ -40,7 +40,7 @@ def train():
 
         config = tf_utils.gpu_config(FLAGS.gpu_id)
         with tf.Session(config=config) as sess:
-            sess.run(tf.initialize_variables(tf.all_variables()))
+            sess.run(tf.variables_initializer(tf.global_variables()))
             summary_writer = tf.summary.FileWriter(logdir=save_locations.summary_save_dir, graph=sess.graph)
 
             tf.train.start_queue_runners(sess=sess)
