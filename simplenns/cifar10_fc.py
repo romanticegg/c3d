@@ -28,7 +28,7 @@ def inference(images):
     print '*'*32
 
     with tf.variable_scope('conv1') as scope:
-        weights_initializer = tf.truncated_normal_initializer(stddev=5e2)
+        weights_initializer = tf.truncated_normal_initializer(stddev=5e-2)
         kernel = variable_with_weight_decay('weights',
                                              shape=[5, 5, 3, 64],
                                              initializer=weights_initializer,

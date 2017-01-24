@@ -295,9 +295,9 @@ FLAGS = flags.FLAGS
 
 def main(argv = None):
     if not FLAGS.save_name:
-        save_dir = utils.get_date_str()
+        save_dir = os.path.join('Save', utils.get_date_str())
     else:
-        save_dir = FLAGS.save_name
+        save_dir = os.path.join('Save', FLAGS.save_name)
 
     save_locations = tf_easy_dir.tf_easy_dir(save_dir=save_dir)
     if FLAGS.rewrite:
