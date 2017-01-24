@@ -78,8 +78,8 @@ def inference(images):
         activation_summary(conv3)
 
     #update: added a new normalization
-    norm3 = tf.nn.lrn(conv3, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
-                      name='norm2')
+    # norm3 = tf.nn.lrn(conv3, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
+    #                   name='norm2')
     # local4
     with tf.variable_scope('conv4') as scope:
         weights = variable_with_weight_decay('weights', shape=[1, 1, 384, 192],
