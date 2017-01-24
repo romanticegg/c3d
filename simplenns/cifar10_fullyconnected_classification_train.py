@@ -234,8 +234,8 @@ def train(save_locations):
 
             for i in xrange(FLAGS.max_steps):
                 # print 'Starting step {:d}'.format(i)
-                _, top_k_, = sess.run([train_op, top_k])
-                print '{:d}: precision:[{:d} / {:d}]'.format(i, np.sum(top_k_), FLAGS.batch_size)
+                _, top_k_, loss_= sess.run([train_op, top_k, total_loss ])
+                print '{:d}: loss: {:.3f}, precision:[{:d} / {:d}]'.format(i, loss_, np.sum(top_k_), FLAGS.batch_size)
 
                 # print '{:d}: shape-output:[{:s}], shape-pred: [{:s}]'.format(i, ', '.join(map(str, o_.shape)), ', '.join(map(str, pred_.shape)) )
                 # print '{:d}: shape-output:[{:s}]'.format(i, ', '.join(map(str, o_.shape)))
