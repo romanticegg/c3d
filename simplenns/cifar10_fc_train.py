@@ -50,7 +50,7 @@ def train():
                 if (i+1) % 10 == 0:
                     loss_, correct_ones_ = sess.run([loss, correct_ones])
                     print '[{:08d}|{:08d}]\tloss : {:.3f}\t, correct ones [{:d}|{:d}]'.format(i, FLAGS.max_steps,
-                                                                                              loss_, correct_ones_, FLAGS.batch_size)
+                                                                                              loss_, int(correct_ones_), FLAGS.batch_size)
                 if (i+1 % 100) ==0:
                     summary_ = sess.run(summary_op)
                     summary_writer.add_summary(summary_, global_step=global_step)
