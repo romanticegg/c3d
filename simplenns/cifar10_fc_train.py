@@ -32,11 +32,9 @@ def train():
     with tf.Graph().as_default() as graph:
         global_step =tf.get_variable(name='gstep', initializer=tf.constant(0), trainable=False)
         [batch_images, batch_labels] = cifar10_inputs.inputs(FLAGS.data_dir, FLAGS.batch_size, isTraining=True, isRandom=False)
-
         print 'size of image input: [{:s}]'.format(', '.join(map(str, batch_images.get_shape().as_list())))
         print 'size of labels : [{:s}]'.format(', '.join(map(str, batch_labels.get_shape().as_list())))
         print '-'*32
-
         logits = cifar10_fc.inference(batch_images)
         loss =cifar10_fc.loss(logits=logits, labels=batch_labels)
         train_op = cifar10_fc.train(loss, global_step)
@@ -50,7 +48,7 @@ def train():
             summary_writer = tf.summary.FileWriter(logdir=save_locations.summary_save_dir, graph=sess.graph)
 
             tf.train.start_queue_runners(sess=sess)
-            for i in xrange(FLAGS.max_steps):
+            for i in range(FLAGS.max_steps):
                 _, loss_, correct_ones_ = sess.run([train_op, loss, correct_ones])
 
                 assert not np.isnan(loss_), 'Model diverged with loss = NaN, try again'
