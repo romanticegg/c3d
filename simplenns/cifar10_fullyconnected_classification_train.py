@@ -284,6 +284,8 @@ flags.DEFINE_string('model', None, 'the model to load, if None, training from sc
                                    'a single .model file or a pattern that fit with .meta, .index '
                                    '(e.g. ./models/c3d_ucf_model-99 for 3 files like XXX.meta, XXX.index and '
                                    'XXX.data-00000-of-00001)')
+flags.DEFINE_boolean('use_fp16', False, 'Using FP16 in training[False]')
+
 FLAGS = flags.FLAGS
 
 

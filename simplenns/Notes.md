@@ -171,3 +171,9 @@ See [here](https://www.tensorflow.org/api_docs/python/constant_op/)
 ## Using `tf.app.flags.FLAGS`
 
 if this is used: `FLAGS = tf.app.flags.FLAGS`, then FLAGS can be used as a global environmental variable safely.
+
+## Scopes in tensorflow:
+Check [here](http://stackoverflow.com/questions/35919020/whats-the-difference-of-name-scope-and-a-variable-scope-in-tensorflow)
+There are 4 different kinds of scopes and can be divided into 2 categories:
+- name scope, created using `tf.name_scope` or `tf.op_scope`
+- variable scope, created using `tf.variable_scope` or `tf.variable_op_scope`

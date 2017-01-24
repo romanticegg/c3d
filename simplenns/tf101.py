@@ -22,5 +22,11 @@ def main2():
         output_s = output.eval(feed_dict={x: 2.4})
         print output_s
 
+def main3():
+    with tf.variable_scope('Fuck') as scope:
+        x = tf.add(1,2, name=scope.name)
+        print x.op.name
+
+
 if __name__ == '__main__':
-    main1()
+    main3()
