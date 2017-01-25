@@ -73,8 +73,12 @@ def bn(x, isTraining=True, id_string=None, use_bias=False):
 
 
     with tf.control_dependencies([bn_averages_op]):
-        r_mean, r_var = tf.cond(tf.cast(isTraining, tf.bool), lambda: (mean, variance), lambda: (moving_mean, moving_variance))
-        x = tf.nn.batch_normalization(x, r_mean, r_var, beta, gamma, BN_EPSILON)
+        # r_mean, r_var = tf.cond(tf.cast(isTraining, tf.bool), lambda: (mean, variance), lambda: (moving_mean, moving_variance))
+        if isTraining:
+            x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, BN_EPSILON)
+        else:
+            x = tf.nn.batch_normalization(x, moving_mean, moving_variance, beta, gamma, BN_EPSILON)
+
 
     return x
 
