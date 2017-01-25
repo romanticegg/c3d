@@ -31,18 +31,17 @@ def inference(images, isTraining=True):
     print '*'*32
     #update: decompose the one layer into 2
     with tf.variable_scope('conv1') as scope:
-        weights_initializer = tf.truncated_normal_initializer(stddev=5e-2)
         kernel1_1 = variable_with_weight_decay('weights1_1',
-                                             shape=[3, 3, 3, 64],
-                                             initializer=weights_initializer,
-                                             wd=0.0)
+                                               shape=[3, 3, 3, 64],
+                                               initializer=tf.truncated_normal_initializer(stddev=5e-2),
+                                               wd=0.0)
         biases1_1 = variable_on_cpu('biases1_1', [64], initializer=tf.constant_initializer(0.0))
 
         conv1_1 = tf.nn.conv2d(images, kernel1_1, [1, 1, 1, 1], padding='SAME')
         intermediate1 = tf.nn.relu(tf.nn.bias_add(conv1_1, biases1_1), name='relu1_1')
         kernel1_2 = variable_with_weight_decay('weights1_2',
                                              shape=[3, 3, 64, 64],
-                                             initializer=weights_initializer,
+                                             initializer=tf.truncated_normal_initializer(stddev=5e-2),
                                              wd=0.0)
         biases1_2 =variable_on_cpu('biases1_2', [64], initializer=tf.constant_initializer(0.0))
 
@@ -63,9 +62,9 @@ def inference(images, isTraining=True):
     # conv2
     with tf.variable_scope('conv2') as scope:
         kernel2_1 = variable_with_weight_decay('weights2_1',
-                                             shape=[3, 3, 64, 64],
-                                             initializer=tf.truncated_normal_initializer(stddev=5e-2),
-                                             wd=0.0)
+                                               shape=[3, 3, 64, 64],
+                                               initializer=tf.truncated_normal_initializer(stddev=5e-2),
+                                               wd=0.0)
         biases2_1 = variable_on_cpu('biases2_1', [64], tf.constant_initializer(0.0))
         conv2_1 = tf.nn.conv2d(norm1, kernel2_1, [1, 1, 1, 1], padding='SAME')
         intermediate2 =tf.nn.relu(tf.nn.bias_add(conv2_1, biases2_1), name='relu2_1')
