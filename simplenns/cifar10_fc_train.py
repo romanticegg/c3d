@@ -10,7 +10,7 @@ import numpy as np
 flags = tf.app.flags
 flags.DEFINE_string('data_dir', '/Users/zijwei/Dev/datasets/cifar10-batch', 'directory to save training data[/Users/zijwei/Dev/datasets]')
 flags.DEFINE_string("save_name", None, "Directory in which to save output of this run[Currentdate such as 2017-01...]")
-flags.DEFINE_integer('batch_size', 64, 'batch size[64]')
+flags.DEFINE_integer('batch_size', 128, 'batch size[128]')
 flags.DEFINE_boolean('rewrite', False, 'If rewrite training logs to save_name[False]')
 flags.DEFINE_integer('max_steps', 5000, 'Number of training steps[5000]')
 flags.DEFINE_integer('gpu_id', None, 'GPU ID [None]')
@@ -39,6 +39,7 @@ def train():
         loss =cifar10_model.loss(logits=logits, labels=batch_labels)
         train_op = cifar10_model.train(loss, global_step)
         correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
+
         saver = tf.train.Saver()
         summary_op = tf.summary.merge_all()
 
@@ -62,8 +63,8 @@ def train():
                     summary_ = sess.run(summary_op)
                     summary_writer.add_summary(summary_, global_step=global_step)
 
-                if (i+1) % 500 == 0:
-                    save_path= os.path.join(save_locations.model_save_dir, 'model.ckpt')
+                if (i+1) % 1000 == 0:
+                    save_path= os.path.join(save_locations.model_save_dir, 'model')
                     saver.save(sess=sess,global_step=global_step, save_path=save_path)
             coord.request_stop()
             coord.join(threads=threads)

@@ -87,7 +87,7 @@ def train(save_locations):
         with tf.variable_scope('conv1') as scope:
             w1 = _variable_with_weight_decay('w', [5,5,3,64], stddev=5e-2, wd=0)
             b1 = _variable_on_cpu('b',[64],tf.constant_initializer(0))
-            pre_activation1 = tf.nn.bias_add(tf.nn.conv2d(batch_images, w1, [1,1,1,1],padding="SAME"), b1)
+            pre_activation1 = tf.nn.bias_add(tf.nn.conv2d(batch_images, w1, [1,1,1,1], padding="SAME"), b1)
             conv1 = tf.nn.relu(pre_activation1, 'relu')
             print 'size of first layer output: [{:s}]'.format(', '.join(map(str, conv1.get_shape().as_list())))
 
