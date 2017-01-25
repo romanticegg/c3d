@@ -65,18 +65,18 @@ def bn(x, isTraining=True, id_string=None, use_bias=False):
 
     # if not isTraining:
     bn_averages = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY)
-    bn_averages_op = bn_averages.apply([mean, variance])
 
-    moving_mean = bn_averages.average_name(mean)
-    moving_variance = bn_averages.average_name(variance)
-
+    moving_mean = bn_averages.average(mean)
+    moving_variance = bn_averages.average(variance)
 
 
-    with tf.control_dependencies([bn_averages_op]):
+
+    # tf.control_dependencies([bn_averages_op]):
         # r_mean, r_var = tf.cond(tf.cast(isTraining, tf.bool), lambda: (mean, variance), lambda: (moving_mean, moving_variance))
-        if isTraining:
-            x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, BN_EPSILON)
-        else:
+    if isTraining:
+            with tf.control_dependencies(bn_averages.apply([mean, variance])):
+                x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, BN_EPSILON)
+    else:
             x = tf.nn.batch_normalization(x, moving_mean, moving_variance, beta, gamma, BN_EPSILON)
 
 
