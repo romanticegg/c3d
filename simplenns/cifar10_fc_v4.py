@@ -51,27 +51,31 @@ def bn(x, isTraining=True, id_string=None, use_bias=False):
                             params_shape,
                             initializer=tf.constant_initializer(1.0))
 
-    moving_mean = variable_on_cpu('moving_mean_{:s}'.format(id_string),
-                                params_shape,
-                                initializer=tf.constant_initializer(0.0),
-                                trainable=False)
-    moving_variance = variable_on_cpu('moving_variance_{:s}'.format(id_string),
-                                    params_shape,
-                                    initializer=tf.constant_initializer(0.0),
-                                    trainable=False)
+    # moving_mean = variable_on_cpu('moving_mean_{:s}'.format(id_string),
+    #                             params_shape,
+    #                             initializer=tf.constant_initializer(0.0),
+    #                             trainable=False)
+    # moving_variance = variable_on_cpu('moving_variance_{:s}'.format(id_string),
+    #                                 params_shape,
+    #                                 initializer=tf.constant_initializer(0.0),
+    #                                 trainable=False)
 
     # These ops will only be preformed when training.
     mean, variance = tf.nn.moments(x, axis)
 
-    if not isTraining:
-        bn_averages = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY)
-        bn_averages_op = bn_averages.apply([moving_mean, moving_variance])
+    # if not isTraining:
+    bn_averages = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY)
+    bn_averages_op = bn_averages.apply([mean, variance])
+
+    moving_mean = bn_averages.average_name(mean)
+    moving_variance = bn_averages.average_name(variance)
 
 
-        with tf.control_dependencies([bn_averages_op]):
-            x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, BN_EPSILON)
-    else:
-        x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, BN_EPSILON)
+
+    with tf.control_dependencies([bn_averages_op]):
+        r_mean, r_var = tf.cond(isTraining, lambda: (mean, variance), lambda: (moving_mean, moving_variance))
+        x = tf.nn.batch_normalization(x, r_mean, r_var, beta, gamma, BN_EPSILON)
+
     return x
 
 #update: batch normalization added, so the training and validataion should differ

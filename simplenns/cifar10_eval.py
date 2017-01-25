@@ -1,5 +1,5 @@
 import tensorflow as tf
-import cifar10_fc_v0 as cifar10_model
+import cifar10_fc_v4 as cifar10_model
 import tf_easy_dir
 import utils
 import tf_utils
@@ -30,7 +30,7 @@ def eval():
         print 'size of labels : [{:s}]'.format(', '.join(map(str, batch_labels.get_shape().as_list())))
         print '-'*32
 
-        logits = cifar10_model.inference(batch_images)
+        logits = cifar10_model.inference(batch_images, isTraining=False)
         correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
 
 

@@ -168,7 +168,7 @@ def _variable_with_weight_decay(name, shape, stddev, wd):
 #     return images, labels
 
 
-def inference(images):
+def inference(images, isTraining=True):
     """Build the CIFAR-10 model.
 
     Args:

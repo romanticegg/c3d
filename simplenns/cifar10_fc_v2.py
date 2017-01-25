@@ -24,7 +24,7 @@ def _print_layer_info(layername, kernel=None, stride=None, reslt=None):
     print '-' * 32
 
 
-def inference(images):
+def inference(images, isTraining=True):
     print 'Model Initialization'
     print '*'*32
 
