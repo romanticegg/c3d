@@ -207,3 +207,6 @@ Note the operation v3 does not distinguish name_scope and variable scope.
 An explaination of Batch Normalization can be found @ [here](https://gab41.lab41.org/batch-normalization-what-the-hey-d480039a9e3b#.l1k9l2mmu)
 
 Another [implementation](http://r2rt.com/implementing-batch-normalization-in-tensorflow.html)
+
+## Understanding   Xavier Initialization
+Check [here](http://andyljones.tumblr.com/post/110998971763/an-explanation-of-xavier-initialization)

@@ -134,7 +134,13 @@ def bn(x, isTraining=True, id_string=None, use_bias=False):
     else:
             # x = tf.nn.batch_normalization(x, moving_mean, moving_variance, beta, gamma, BN_EPSILON)
             # with tf.control_dependencies([bn_averages_op]):
-                x = tf.nn.batch_normalization(x, moving_mean, moving_variance, beta, gamma, BN_EPSILON)
+        #fixme: you should not do this, even though it's giving you btter rslt
+        # mean, variance = tf.nn.moments(x, axis)
+        # x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, BN_EPSILON)
+
+        #update: after enough iterations, the error goes down to similar...
+        #fixme: find out if the reason is because dataset size and ...
+        x = tf.nn.batch_normalization(x, moving_mean, moving_variance, beta, gamma, BN_EPSILON)
 
     return x
 
