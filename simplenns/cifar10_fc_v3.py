@@ -61,14 +61,22 @@ def inference(images):
 
     # conv2
     with tf.variable_scope('conv2') as scope:
-        kernel = variable_with_weight_decay('weights2_1',
-                                             shape=[5, 5, 64, 64],
+        kernel2_1 = variable_with_weight_decay('weights2_1',
+                                             shape=[3, 3, 64, 64],
                                              initializer=tf.truncated_normal_initializer(stddev=5e-2),
                                              wd=0.0)
-        conv = tf.nn.conv2d(norm1, kernel, [1, 1, 1, 1], padding='SAME')
-        biases = variable_on_cpu('biases', [64], tf.constant_initializer(0.1))
-        pre_activation = tf.nn.bias_add(conv, biases)
-        conv2 = tf.nn.relu(pre_activation, name=scope.name)
+        biases2_1 = variable_on_cpu('biases2_1', [64], tf.constant_initializer(0.0))
+        conv2_1 = tf.nn.conv2d(norm1, kernel2_1, [1, 1, 1, 1], padding='SAME')
+        intermediate2 =tf.nn.relu(tf.nn.bias_add(conv2_1, biases2_1), name='relu2_1')
+
+        kernel2_2 = variable_with_weight_decay('weights2_2',
+                                             shape=[3, 3, 64, 64],
+                                             initializer=tf.truncated_normal_initializer(stddev=5e-2),
+                                             wd=0.0)
+        biases2_2 = variable_on_cpu('biases2_2', [64], tf.constant_initializer(0.0))
+        conv2_2 = tf.nn.conv2d(intermediate2, kernel2_2, [1, 1, 1, 1], padding='SAME')
+        conv22 =tf.nn.relu(tf.nn.bias_add(conv2_2, biases2_2), name='relu2_2')
+        conv2 = tf.nn.relu(conv2_2, name=scope.name)
         activation_summary(conv2)
         _print_layer_info('conv2', kernel=[5,5,64,64], stride=[1, 1, 1, 1], reslt=conv2.get_shape().as_list())
 
@@ -89,7 +97,7 @@ def inference(images):
                                              initializer=tf.truncated_normal_initializer(stddev=0.04),
                                              wd=0.004)
         conv = tf.nn.conv2d(norm2, weights,[1, 1, 1, 1], padding='VALID')
-        biases = variable_on_cpu('biases', [384], tf.constant_initializer(0.1))
+        biases = variable_on_cpu('biases', [384], tf.constant_initializer(0.0))
         pre_activation = tf.nn.bias_add(conv, biases)
         conv3 = tf.nn.relu(pre_activation, name=scope.name)
         activation_summary(conv3)
@@ -103,7 +111,7 @@ def inference(images):
         weights = variable_with_weight_decay('weights', shape=[1, 1, 384, 192],
                                              initializer=tf.truncated_normal_initializer(stddev=0.04), wd=0.004)
         conv = tf.nn.conv2d(conv3, weights,[1, 1, 1, 1], padding='VALID')
-        biases = variable_on_cpu('biases', [192], tf.constant_initializer(0.1))
+        biases = variable_on_cpu('biases', [192], tf.constant_initializer(0.0))
         pre_activation = tf.nn.bias_add(conv, biases)
         conv4 = tf.nn.relu(pre_activation, name=scope.name)
         activation_summary(conv4)

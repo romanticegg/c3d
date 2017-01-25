@@ -1,5 +1,5 @@
 import tensorflow as tf
-import cifar10_fc_v2 as cifar10_model
+import cifar10_fc_v1 as cifar10_model
 import tf_easy_dir
 import utils
 import tf_utils
@@ -14,6 +14,8 @@ flags.DEFINE_string('data_dir', '/Users/zijwei/Dev/datasets/cifar10-batch', 'dir
 flags.DEFINE_string('model', None, 'the model to evaluate on')
 flags.DEFINE_integer('batch_size', 50, 'batch size[50]')
 flags.DEFINE_integer('gpu_id', None, 'GPU ID [None]')
+tf.app.flags.DEFINE_boolean('use_fp16', False,
+                            """Train the model using fp16[False].""")
 FLAGS = flags.FLAGS
 
 
@@ -30,7 +32,12 @@ def eval():
 
         logits = cifar10_model.inference(batch_images)
         correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
-        saver = tf.train.Saver()
+
+        variable_averages = tf.train.ExponentialMovingAverage(
+            cifar10_model.MOVING_AVERAGE_DECAY)
+        variables_to_restore = variable_averages.variables_to_restore()
+        saver = tf.train.Saver(variables_to_restore)
+        # saver = tf.train.Saver()
 
         config = tf_utils.gpu_config(FLAGS.gpu_id)
         with tf.Session(config=config) as sess:
@@ -55,7 +62,7 @@ def eval():
             coord.request_stop()
             coord.join(threads=threads)
 
-
+            # print 'total_sample_count:\t{:d}, \t correct ones:\t{:d}'.format(total_sample_count, true_count)
             print 'Done evaluation, [{:d} out of {:d}], rate: {:.3f}'.format(a_correct, a_tested, a_correct*1.0/a_tested)
 
 def main(argv=None):
