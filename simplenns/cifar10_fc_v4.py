@@ -46,18 +46,18 @@ def bn(x, isTraining=True, id_string=None, use_bias=False):
 
     beta = variable_on_cpu('beta_{:s}'.format(id_string),
                            params_shape,
-                           initializer=tf.zeros_initializer)
+                           initializer=tf.constant_initializer(0.0))
     gamma = variable_on_cpu('gamma_{:s}'.format(id_string),
                             params_shape,
-                            initializer=tf.ones_initializer)
+                            initializer=tf.constant_initializer(1.0))
 
     moving_mean = variable_on_cpu('moving_mean_{:s}'.format(id_string),
                                 params_shape,
-                                initializer=tf.zeros_initializer,
+                                initializer=tf.constant_initializer(0.0),
                                 trainable=False)
     moving_variance = variable_on_cpu('moving_variance_{:s}'.format(id_string),
                                     params_shape,
-                                    initializer=tf.ones_initializer,
+                                    initializer=tf.constant_initializer(0.0),
                                     trainable=False)
 
     # These ops will only be preformed when training.

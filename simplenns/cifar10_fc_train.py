@@ -59,7 +59,7 @@ def train():
                 assert not np.isnan(loss_), 'Model diverged with loss = NaN, try again'
 
                 # if (i+1) % 10 == 0:
-                print '[{:08d}|{:08d}]\tloss : {:.3f}\t, correct ones [{:d}|{:d}]'.format(i, FLAGS.max_steps,
+                print '[{:s} -- {:08d}|{:08d}]\tloss : {:.3f}\t, correct ones [{:d}|{:d}]'.format(FLAGS.save_name, i, FLAGS.max_steps,
                                                                                           loss_, correct_ones_, FLAGS.batch_size)
                 if (i+1 % 100) ==0:
                     summary_ = sess.run(summary_op)
