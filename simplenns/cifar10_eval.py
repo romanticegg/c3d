@@ -7,6 +7,7 @@ import cifar10_inputs
 import os
 import numpy as np
 import math
+import progressbar
 
 flags = tf.app.flags
 flags.DEFINE_string('data_dir', '/Users/zijwei/Dev/datasets/cifar10-batch', 'directory to save training data[/Users/zijwei/Dev/datasets]')
@@ -35,25 +36,31 @@ def eval():
         with tf.Session(config=config) as sess:
             sess.run(tf.variables_initializer(tf.global_variables()))
             saver.restore(sess=sess,save_path=FLAGS.model)
-            nbatches = math.ceil(cifar10_inputs.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL*1.0/FLAGS.batch_size)
+            nbatches = int(math.ceil(cifar10_inputs.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL*1.0/FLAGS.batch_size))
 
-            tf.train.start_queue_runners(sess=sess)
+            #todo: remember the pattern
+            coord = tf.train.Coordinator()
+            threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+
             a_correct = 0
             a_tested = 0
-            for i in xrange(nbatches):
+            pbar =progressbar.ProgressBar()
+
+            for i in pbar(range(nbatches)):
                 correct_ones_ = sess.run(correct_ones)
-                print 'Batch: {:d}|{:d} \t correct: {:d}'.format(i, nbatches, correct_ones)
+                # print 'Batch: {:d}|{:d} \t correct: {:d}'.format(i, nbatches, correct_ones_)
                 a_correct += correct_ones_
-                a_tested  += FLAGS.batch_size
+                a_tested += FLAGS.batch_size
+
+            coord.request_stop()
+            coord.join(threads=threads)
 
 
             print 'Done evaluation, [{:d} out of {:d}], rate: {:.3f}'.format(a_correct, a_tested, a_correct*1.0/a_tested)
 
-
-
 def main(argv=None):
     if not FLAGS.model:
-        'Please indicate the model path'
+        print 'Please indicate the model path'
         return
     eval()
 

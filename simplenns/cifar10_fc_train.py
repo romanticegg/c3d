@@ -1,5 +1,5 @@
 import tensorflow as tf
-import cifar10_fc
+import cifar10_fc as cifar10_model
 import tf_easy_dir
 import utils
 import tf_utils
@@ -35,10 +35,10 @@ def train():
         print 'size of image input: [{:s}]'.format(', '.join(map(str, batch_images.get_shape().as_list())))
         print 'size of labels : [{:s}]'.format(', '.join(map(str, batch_labels.get_shape().as_list())))
         print '-'*32
-        logits = cifar10_fc.inference(batch_images)
-        loss =cifar10_fc.loss(logits=logits, labels=batch_labels)
-        train_op = cifar10_fc.train(loss, global_step)
-        correct_ones = cifar10_fc.correct_ones(logits=logits, labels=batch_labels)
+        logits = cifar10_model.inference(batch_images)
+        loss =cifar10_model.loss(logits=logits, labels=batch_labels)
+        train_op = cifar10_model.train(loss, global_step)
+        correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
         saver = tf.train.Saver()
         summary_op = tf.summary.merge_all()
 
@@ -47,7 +47,9 @@ def train():
             sess.run(tf.variables_initializer(tf.global_variables()))
             summary_writer = tf.summary.FileWriter(logdir=save_locations.summary_save_dir, graph=sess.graph)
 
-            tf.train.start_queue_runners(sess=sess)
+            coord = tf.train.Coordinator()
+
+            threads = tf.train.start_queue_runners(sess=sess, coord=coord)
             for i in range(FLAGS.max_steps):
                 _, loss_, correct_ones_ = sess.run([train_op, loss, correct_ones])
 
@@ -63,7 +65,8 @@ def train():
                 if (i+1) % 500 == 0:
                     save_path= os.path.join(save_locations.model_save_dir, 'model.ckpt')
                     saver.save(sess=sess,global_step=global_step, save_path=save_path)
-
+            coord.request_stop()
+            coord.join(threads=threads)
 
 def main(argv=None):
     train()

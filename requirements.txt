@@ -4,4 +4,4 @@ scipy
 opencv (`conda install opencv` will do )
 #*scikit-image
 
-
+pip intsall progressbar2
