@@ -25,7 +25,8 @@ def _print_layer_info(layername, kernel=None, stride=None, reslt=None):
     print '-' * 32
 
 
-def inference(images):
+#update: batch normalization added, so the training and validataion should differ
+def inference(images, isTraining=True):
     print 'Model Initialization'
     print '*'*32
     #update: decompose the one layer into 2
@@ -75,10 +76,9 @@ def inference(images):
                                              wd=0.0)
         biases2_2 = variable_on_cpu('biases2_2', [64], tf.constant_initializer(0.0))
         conv2_2 = tf.nn.conv2d(intermediate2, kernel2_2, [1, 1, 1, 1], padding='SAME')
-        conv22 =tf.nn.relu(tf.nn.bias_add(conv2_2, biases2_2), name='relu2_2')
-        conv2 = tf.nn.relu(conv2_2, name=scope.name)
+        conv2 =tf.nn.relu(tf.nn.bias_add(conv2_2, biases2_2), name='relu2_2')
         activation_summary(conv2)
-        _print_layer_info('conv2', kernel=[5,5,64,64], stride=[1, 1, 1, 1], reslt=conv2.get_shape().as_list())
+        _print_layer_info('conv2', kernel=[3,3,64,64], stride=[1, 1, 1, 1], reslt=conv2.get_shape().as_list())
 
     # pool2
     pool2 = tf.nn.max_pool(conv2, ksize=[1, 3, 3, 1],

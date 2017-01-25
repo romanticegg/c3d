@@ -1,5 +1,5 @@
 import tensorflow as tf
-import cifar10_fc_v0 as cifar10_model
+import cifar10_fc_v3 as cifar10_model
 import tf_easy_dir
 import utils
 import tf_utils
@@ -42,7 +42,7 @@ def train():
         train_op = cifar10_model.train(loss, global_step)
         correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
 
-        saver = tf.train.Saver()
+        saver = tf.train.Saver(max_to_keep=None)
         summary_op = tf.summary.merge_all()
 
         config = tf_utils.gpu_config(FLAGS.gpu_id)
@@ -65,7 +65,7 @@ def train():
                     summary_ = sess.run(summary_op)
                     summary_writer.add_summary(summary_, global_step=global_step)
 
-                if (i+1) % 1000 == 0:
+                if (i+1) % 2000 == 0:
                     save_path= os.path.join(save_locations.model_save_dir, 'model')
                     saver.save(sess=sess,global_step=global_step, save_path=save_path)
             coord.request_stop()

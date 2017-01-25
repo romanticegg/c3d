@@ -1,5 +1,5 @@
 import tensorflow as tf
-import cifar10_fc_v1 as cifar10_model
+import cifar10_fc_v0 as cifar10_model
 import tf_easy_dir
 import utils
 import tf_utils
@@ -32,6 +32,7 @@ def eval():
 
         logits = cifar10_model.inference(batch_images)
         correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
+
 
         variable_averages = tf.train.ExponentialMovingAverage(
             cifar10_model.MOVING_AVERAGE_DECAY)
