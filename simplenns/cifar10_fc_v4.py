@@ -28,6 +28,59 @@ def _print_layer_info(layername, kernel=None, stride=None, reslt=None):
 #fixme: batch normalization
 BN_EPSILON = 0.001
 
+# def bn(x, isTraining=True, id_string=None, use_bias=False):
+#     x_shape = x.get_shape()
+#     params_shape = x_shape[-1:]
+#     if not id_string:
+#         id_string=""
+#
+#
+#
+#     if use_bias:
+#         bias = variable_on_cpu('bias_{:s}'.format(id_string), params_shape,
+#                              initializer=tf.zeros_initializer)
+#         return x + bias
+#
+#     #todo: is this for all lay
+#     axis = list(range(len(x_shape) - 1))
+#
+#     beta = variable_on_cpu('beta_{:s}'.format(id_string),
+#                            params_shape,
+#                            initializer=tf.constant_initializer(0.0))
+#     gamma = variable_on_cpu('gamma_{:s}'.format(id_string),
+#                             params_shape,
+#                             initializer=tf.constant_initializer(1.0))
+#
+#     # moving_mean = variable_on_cpu('moving_mean_{:s}'.format(id_string),
+#     #                             params_shape,
+#     #                             initializer=tf.constant_initializer(0.0),
+#     #                             trainable=False)
+#     # moving_variance = variable_on_cpu('moving_variance_{:s}'.format(id_string),
+#     #                                 params_shape,
+#     #                                 initializer=tf.constant_initializer(0.0),
+#     #                                 trainable=False)
+#
+#     # These ops will only be preformed when training.
+#     mean, variance = tf.nn.moments(x, axis)
+#
+#     # if not isTraining:
+#     bn_averages = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY)
+#     bn_averages_op = bn_averages.apply([mean, variance])
+#
+#     moving_mean = bn_averages.average(mean)
+#     moving_variance = bn_averages.average(variance)
+#
+#
+#     if isTraining:
+#             with tf.control_dependencies([bn_averages_op]):
+#                 x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, BN_EPSILON)
+#     else:
+#             # x = tf.nn.batch_normalization(x, moving_mean, moving_variance, beta, gamma, BN_EPSILON)
+#             # with tf.control_dependencies([bn_averages_op]):
+#                 x = tf.nn.batch_normalization(x, moving_mean, moving_variance, beta, gamma, BN_EPSILON)
+#
+#     return x
+
 def bn(x, isTraining=True, id_string=None, use_bias=False):
     x_shape = x.get_shape()
     params_shape = x_shape[-1:]
@@ -51,32 +104,37 @@ def bn(x, isTraining=True, id_string=None, use_bias=False):
                             params_shape,
                             initializer=tf.constant_initializer(1.0))
 
-    # moving_mean = variable_on_cpu('moving_mean_{:s}'.format(id_string),
-    #                             params_shape,
-    #                             initializer=tf.constant_initializer(0.0),
-    #                             trainable=False)
-    # moving_variance = variable_on_cpu('moving_variance_{:s}'.format(id_string),
-    #                                 params_shape,
-    #                                 initializer=tf.constant_initializer(0.0),
-    #                                 trainable=False)
+    moving_mean = variable_on_cpu('moving_mean_{:s}'.format(id_string),
+                                params_shape,
+                                initializer=tf.constant_initializer(0.0),
+                                trainable=False)
+    moving_variance = variable_on_cpu('moving_variance_{:s}'.format(id_string),
+                                    params_shape,
+                                    initializer=tf.constant_initializer(0.0),
+                                    trainable=False)
 
     # These ops will only be preformed when training.
-    mean, variance = tf.nn.moments(x, axis)
 
-    # if not isTraining:
-    bn_averages = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY)
+    # # if not isTraining:
+    # bn_averages = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY)
+    # bn_averages_op = bn_averages.apply([mean, variance])
+    #
+    # moving_mean = bn_averages.average(mean)
+    # moving_variance = bn_averages.average(variance)
 
-    moving_mean = bn_averages.average(mean)
-    moving_variance = bn_averages.average(variance)
-
-    bn_averages_op = bn_averages.apply([mean, variance])
 
     if isTraining:
-            with tf.control_dependencies([bn_averages_op]):
+        mean, variance = tf.nn.moments(x, axis)
+        train_mean = tf.assign(moving_mean,
+                               moving_mean * MOVING_AVERAGE_DECAY + mean * (1 - MOVING_AVERAGE_DECAY))
+        train_var = tf.assign(moving_variance,
+                              moving_variance * MOVING_AVERAGE_DECAY + variance * (1 - MOVING_AVERAGE_DECAY))
+        with tf.control_dependencies([train_mean, train_var]):
                 x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, BN_EPSILON)
     else:
-            x = tf.nn.batch_normalization(x, moving_mean, moving_variance, beta, gamma, BN_EPSILON)
-
+            # x = tf.nn.batch_normalization(x, moving_mean, moving_variance, beta, gamma, BN_EPSILON)
+            # with tf.control_dependencies([bn_averages_op]):
+                x = tf.nn.batch_normalization(x, moving_mean, moving_variance, beta, gamma, BN_EPSILON)
 
     return x
 
