@@ -20,9 +20,9 @@ def get_all_names():
 
 
 #create a variable on CPU
-def variable_on_cpu(name, shape, initializer=None):
+def variable_on_cpu(name, shape, initializer=None, trainable=True):
     with tf.device('/cpu:0'):
-        var = tf.get_variable(name=name, shape=shape, initializer=initializer)
+        var = tf.get_variable(name=name, shape=shape, initializer=initializer, trainable=trainable)
     return var
 
 

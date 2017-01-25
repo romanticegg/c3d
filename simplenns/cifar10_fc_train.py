@@ -1,5 +1,5 @@
 import tensorflow as tf
-import cifar10_fc_v3 as cifar10_model
+import cifar10_fc_v4 as cifar10_model
 import tf_easy_dir
 import utils
 import tf_utils

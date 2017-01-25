@@ -8,7 +8,7 @@ import tarfile
 import tf_easy_dir
 from tf_utils import variable_with_weight_decay, variable_on_cpu, activation_summary
 import cifar10_inputs as inputs
-#todo: add batchnorm and VGG like 3*3 structure
+#todo: add batchnorm and VGG like 3*3 structure and batch normalization
 NUM_CLASSES = 10
 
 FLAGS=tf.app.flags.FLAGS
@@ -25,6 +25,56 @@ def _print_layer_info(layername, kernel=None, stride=None, reslt=None):
     print '-' * 32
 
 
+#fixme: batch normalization
+BN_EPSILON = 0.001
+
+def bn(x, isTraining=True, id_string=None, use_bias=False):
+    x_shape = x.get_shape()
+    params_shape = x_shape[-1:]
+    if not id_string:
+        id_string=""
+
+
+
+    if use_bias:
+        bias = variable_on_cpu('bias_{:s}'.format(id_string), params_shape,
+                             initializer=tf.zeros_initializer)
+        return x + bias
+
+    #todo: is this for all lay
+    axis = list(range(len(x_shape) - 1))
+
+    beta = variable_on_cpu('beta_{:s}'.format(id_string),
+                           params_shape,
+                           initializer=tf.zeros_initializer)
+    gamma = variable_on_cpu('gamma_{:s}'.format(id_string),
+                            params_shape,
+                            initializer=tf.ones_initializer)
+
+    moving_mean = variable_on_cpu('moving_mean_{:s}'.format(id_string),
+                                params_shape,
+                                initializer=tf.zeros_initializer,
+                                trainable=False)
+    moving_variance = variable_on_cpu('moving_variance_{:s}'.format(id_string),
+                                    params_shape,
+                                    initializer=tf.ones_initializer,
+                                    trainable=False)
+
+    # These ops will only be preformed when training.
+    mean, variance = tf.nn.moments(x, axis)
+
+    if not isTraining:
+        bn_averages = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY)
+        bn_averages_op = bn_averages.apply([moving_mean, moving_variance])
+
+
+        with tf.control_dependencies([bn_averages_op]):
+            x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, BN_EPSILON)
+    else:
+        x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, BN_EPSILON)
+    return x
+
+#update: batch normalization added, so the training and validataion should differ
 def inference(images, isTraining=True):
     print 'Model Initialization'
     print '*'*32
@@ -34,18 +84,20 @@ def inference(images, isTraining=True):
                                                shape=[3, 3, 3, 64],
                                                initializer=tf.truncated_normal_initializer(stddev=5e-2),
                                                wd=0.0)
-        biases1_1 = variable_on_cpu('biases1_1', [64], initializer=tf.constant_initializer(0.0))
+        # biases1_1 = variable_on_cpu('biases1_1', [64], initializer=tf.constant_initializer(0.0))
 
         conv1_1 = tf.nn.conv2d(images, kernel1_1, [1, 1, 1, 1], padding='SAME')
-        intermediate1 = tf.nn.relu(tf.nn.bias_add(conv1_1, biases1_1), name='relu1_1')
+        conv1_1_bn = bn(conv1_1, isTraining=isTraining, id_string='1_1')
+        intermediate1 = tf.nn.relu(conv1_1_bn, name='relu1_1')
         kernel1_2 = variable_with_weight_decay('weights1_2',
                                              shape=[3, 3, 64, 64],
                                              initializer=tf.truncated_normal_initializer(stddev=5e-2),
                                              wd=0.0)
-        biases1_2 =variable_on_cpu('biases1_2', [64], initializer=tf.constant_initializer(0.0))
+        # biases1_2 =variable_on_cpu('biases1_2', [64], initializer=tf.constant_initializer(0.0))
 
         conv1_2 = tf.nn.conv2d(intermediate1, kernel1_2, [1, 1, 1,1], padding='SAME')
-        conv1 =tf.nn.relu(tf.nn.bias_add(conv1_2,biases1_2),name=scope.name)
+        conv1_2_bn = bn(conv1_2, isTraining=isTraining, id_string='1_2')
+        conv1 =tf.nn.relu(conv1_2_bn,name=scope.name)
 
         activation_summary(conv1)
         _print_layer_info('conv1_1', kernel=[3, 3, 3, 64], stride=[1, 1, 1, 1], reslt=intermediate1.get_shape().as_list())
@@ -64,17 +116,21 @@ def inference(images, isTraining=True):
                                                shape=[3, 3, 64, 64],
                                                initializer=tf.truncated_normal_initializer(stddev=5e-2),
                                                wd=0.0)
-        biases2_1 = variable_on_cpu('biases2_1', [64], tf.constant_initializer(0.0))
+        # biases2_1 = variable_on_cpu('biases2_1', [64], tf.constant_initializer(0.0))
         conv2_1 = tf.nn.conv2d(norm1, kernel2_1, [1, 1, 1, 1], padding='SAME')
-        intermediate2 =tf.nn.relu(tf.nn.bias_add(conv2_1, biases2_1), name='relu2_1')
+        conv2_1_bn = bn(conv2_1, isTraining=isTraining, id_string='2_1')
+
+        intermediate2 =tf.nn.relu(conv2_1_bn, name='relu2_1')
 
         kernel2_2 = variable_with_weight_decay('weights2_2',
                                              shape=[3, 3, 64, 64],
                                              initializer=tf.truncated_normal_initializer(stddev=5e-2),
                                              wd=0.0)
-        biases2_2 = variable_on_cpu('biases2_2', [64], tf.constant_initializer(0.0))
+        # biases2_2 = variable_on_cpu('biases2_2', [64], tf.constant_initializer(0.0))
         conv2_2 = tf.nn.conv2d(intermediate2, kernel2_2, [1, 1, 1, 1], padding='SAME')
-        conv2 =tf.nn.relu(tf.nn.bias_add(conv2_2, biases2_2), name='relu2_2')
+        conv2_2_bn = bn(conv2_2, isTraining=isTraining, id_string='2_2')
+
+        conv2 =tf.nn.relu(conv2_2_bn, name='relu2_2')
         activation_summary(conv2)
         _print_layer_info('conv2', kernel=[3,3,64,64], stride=[1, 1, 1, 1], reslt=conv2.get_shape().as_list())
 
@@ -95,9 +151,11 @@ def inference(images, isTraining=True):
                                              initializer=tf.truncated_normal_initializer(stddev=0.04),
                                              wd=0.004)
         conv = tf.nn.conv2d(norm2, weights,[1, 1, 1, 1], padding='VALID')
-        biases = variable_on_cpu('biases', [384], tf.constant_initializer(0.0))
-        pre_activation = tf.nn.bias_add(conv, biases)
-        conv3 = tf.nn.relu(pre_activation, name=scope.name)
+        # biases = variable_on_cpu('biases', [384], tf.constant_initializer(0.0))
+        conv_bn = bn(conv, isTraining=isTraining, id_string='1')
+
+        # pre_activation = tf.nn.bias_add(conv, biases)
+        conv3 = tf.nn.relu(conv_bn, name=scope.name)
         activation_summary(conv3)
         _print_layer_info('conv3', kernel=[8, 8, 64, 384], stride=[1, 1, 1, 1], reslt=conv3.get_shape().as_list())
 

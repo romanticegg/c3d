@@ -156,7 +156,7 @@ CPU is like the core to manage data. GPU is running everything, but the data sho
 
 #### Variables collections
 - `LocalVariables`
-- 'GlobalVariables'
+- `GlobalVariables`
 
 
 ####  Saver
@@ -177,3 +177,31 @@ Check [here](http://stackoverflow.com/questions/35919020/whats-the-difference-of
 There are 4 different kinds of scopes and can be divided into 2 categories:
 - name scope, created using `tf.name_scope` or `tf.op_scope`
 - variable scope, created using `tf.variable_scope` or `tf.variable_op_scope`
+
+The explaination:
+- Both scopes have the same effect on all operations as well as variables created using tf.Variable, i.e. the scope will be added as a prefix to the operation or variable name. There is no difference in using any of them for creating tf.Variable
+- op_scope and variable_op_scope accept as arguments a list of values and validate these values are from the default graph, then create new operations based on scope or defaultscope with scope is None(deprecated)
+
+An example:
+```
+with tf.name_scope('ns'):
+    with tf.variable_scope('vs'):
+        v1 = tf.get_variable("v1",[1.0])   #v1.name = 'vs/v1:0'
+        v2 = tf.Variable([2.0],name = 'v2')  #v2.name= 'ns/vs/v2:0'
+        v3 = v1 + v2       #v3.name = 'ns/vs/add:0'
+```
+Note the operation v3 does not distinguish name_scope and variable scope.
+
+>**"most of the time if you think you need a scope, use tf.variable_scope()"**  
+
+## Batch Normalization
+** A natural way to replace bias term**
+### The order of adding batch normalization:
+
+```python
+  x= conv()
+  x=bn()
+  x=activation()
+```
+
+An explaination of Batch Normalization can be found @ (here)[https://gab41.lab41.org/batch-normalization-what-the-hey-d480039a9e3b#.l1k9l2mmu]
