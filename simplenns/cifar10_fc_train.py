@@ -1,5 +1,5 @@
 import tensorflow as tf
-import cifar10_fc_v2 as cifar10_model
+import cifar10_fc_v0 as cifar10_model
 import tf_easy_dir
 import utils
 import tf_utils
@@ -14,6 +14,8 @@ flags.DEFINE_integer('batch_size', 128, 'batch size[128]')
 flags.DEFINE_boolean('rewrite', False, 'If rewrite training logs to save_name[False]')
 flags.DEFINE_integer('max_steps', 5000, 'Number of training steps[5000]')
 flags.DEFINE_integer('gpu_id', None, 'GPU ID [None]')
+tf.app.flags.DEFINE_boolean('use_fp16', False,
+                            """Train the model using fp16[False].""")
 FLAGS = flags.FLAGS
 
 
