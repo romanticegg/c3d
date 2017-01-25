@@ -1,5 +1,5 @@
 import tensorflow as tf
-import cifar10_fc
+import cifar10_fc_v1 as cifar10_model
 import tf_easy_dir
 import utils
 import tf_utils
@@ -28,8 +28,8 @@ def eval():
         print 'size of labels : [{:s}]'.format(', '.join(map(str, batch_labels.get_shape().as_list())))
         print '-'*32
 
-        logits = cifar10_fc.inference(batch_images)
-        correct_ones = cifar10_fc.correct_ones(logits=logits, labels=batch_labels)
+        logits = cifar10_model.inference(batch_images)
+        correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
         saver = tf.train.Saver()
 
         config = tf_utils.gpu_config(FLAGS.gpu_id)
