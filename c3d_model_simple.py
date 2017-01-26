@@ -1,0 +1,145 @@
+# Copyright 2015 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+"""Builds the C3D network(Small) for UCF 101 dataset.
+
+Implements the inference pattern for model building.
+inference_c3d(): Builds the model as far as is required for running the network
+forward to make predictions.
+"""
+
+import tensorflow as tf
+from simplenns.tf_utils import variable_on_cpu, variable_with_weight_decay, bn, print_tensor_shape
+# The UCF-101 dataset has 101 classes
+NUM_CLASSES = 101
+
+# Images are cropped to (CROP_SIZE, CROP_SIZE)
+CROP_SIZE = 128
+CHANNELS = 3
+NUM_FRAMES_PER_CLIP = 16
+
+# note:
+#input: [batch, in_depth, in_height, in_width, in_channels]
+#filter w: [filter_depth, filter_height, filter_width, in_channels, out_channels]
+#strides:A list of ints that has length >= 5. 1-D tensor of length 5. The stride
+# of the sliding window for each dimension of input. Must have strides[0] = strides[4] = 1
+
+
+def inference_c3d(inputs, isTraining=True):
+
+    with tf.variable_scope('conv1') as scope:
+        k1 = variable_with_weight_decay('w', shape=[3, 3, 3, 3, 64], initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.0)
+        conv1 = tf.nn.conv3d(inputs, k1, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv1')
+        conv_bn1 = bn(conv1, isTraining=isTraining)
+        print_tensor_shape(conv_bn1)
+
+    pool1 = tf.nn.max_pool3d(conv_bn1, ksize=[1, 1, 2, 2, 1], strides=[1, 1, 2, 2, 1], padding='SAME', name='pool1')
+    print_tensor_shape(pool1)
+
+    with tf.variable_scope('conv2') as scope:
+        k2 = variable_with_weight_decay('w', shape=[3, 3, 3, 64, 128],
+                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.0)
+        conv2 = tf.nn.conv3d(pool1, k2, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv2')
+        conv_bn2 = bn(conv2, isTraining=isTraining)
+        print_tensor_shape(conv_bn2)
+
+    pool2 = tf.nn.max_pool3d(conv_bn2, ksize=[1, 2, 2, 2, 1], strides=[1, 2, 2, 2, 1], padding='SAME', name='pool2')
+    print_tensor_shape(pool2)
+
+    with tf.variable_scope('conv3') as scope:
+        k3 = variable_with_weight_decay('w', shape=[3, 3, 3, 128, 256],
+                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.0)
+        conv3 = tf.nn.conv3d(pool2, k3, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv3')
+        conv_bn3 = bn(conv3, isTraining=isTraining)
+        print_tensor_shape(conv_bn3)
+
+    pool3 = tf.nn.max_pool3d(conv_bn3, ksize=[1, 2, 2, 2, 1], strides=[1, 2, 2, 2, 1], padding='SAME', name='pool3')
+    print_tensor_shape(pool3)
+
+    with tf.variable_scope('conv4') as scope:
+        k4 = variable_with_weight_decay('w', shape=[3, 3, 3, 256, 256],
+                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.0)
+        conv4 = tf.nn.conv3d(pool3, k4, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv4')
+        conv_bn4 = bn(conv4, isTraining=isTraining)
+        print_tensor_shape(conv_bn4)
+
+    pool4 = tf.nn.max_pool3d(conv_bn4, ksize=[1, 2, 2, 2, 1], strides=[1, 2, 2, 2, 1], padding='SAME', name='pool4')
+    print_tensor_shape(pool4)
+
+    with tf.variable_scope('conv5') as scope:
+        k5 = variable_with_weight_decay('w', shape=[3, 3, 3, 256, 256],
+                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.0)
+        conv5 = tf.nn.conv3d(pool4, k5, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv5')
+        conv_bn5 = bn(conv5, isTraining=isTraining)
+        print_tensor_shape(conv_bn5)
+
+    pool5 = tf.nn.max_pool3d(conv_bn5, ksize=[1, 2, 2, 2, 1], strides=[1, 2, 2, 2, 1], padding='SAME', name='pool5')
+    print_tensor_shape(pool5)
+
+    with tf.variable_scope('fc1') as scope:
+        kfc1 = variable_with_weight_decay('w', shape=[1, 4, 4, 256, 2048],
+                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.004)
+        conv_fc1 = tf.nn.conv3d(pool5, kfc1, strides=[1, 1, 1, 1, 1], padding='VALID', name='fc1')
+        conv_bn_fc1 = bn(conv_fc1, isTraining=isTraining)
+        print_tensor_shape(conv_bn_fc1)
+
+    with tf.variable_scope('fc2') as scope:
+        kfc2 = variable_with_weight_decay('w', shape=[1, 1, 1, 2048, 2048],
+                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.004)
+        conv_fc2 = tf.nn.conv3d(conv_bn_fc1, kfc2, strides=[1, 1, 1, 1, 1], padding='VALID', name='fc2')
+        conv_bn_fc2 = bn(conv_fc2, isTraining=isTraining)
+        print_tensor_shape(conv_bn_fc2)
+
+
+    with tf.variable_scope('classification') as scope:
+        weights = variable_with_weight_decay('w', [1, 1, 1, 2048, NUM_CLASSES],
+                                             initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.0)
+        biases = variable_on_cpu('b', [NUM_CLASSES],
+                                tf.constant_initializer(0.0))
+        conv = tf.nn.conv3d(conv_bn_fc2, weights, strides=[1, 1, 1, 1, 1], padding='VALID')
+        softmax = tf.nn.bias_add(conv, biases)
+        print_tensor_shape(softmax, 'softmax-before')
+
+
+        #todo: the following are used to deal with shapes with different sizes, to get mean
+        softmax = tf.reduce_mean(softmax, axis=1, keep_dims=True)
+        softmax = tf.reduce_mean(softmax, axis=2, keep_dims=True)
+        softmax = tf.reduce_mean(softmax, axis=3, keep_dims=True)
+
+        softmax = tf.squeeze(softmax, axis=[1, 2, 3])
+        print_tensor_shape(softmax, 'softmax-after')
+
+    # Output: class prediction
+    return softmax
+
+
+def correct_ones(logits, labels, k=1):
+    correct_prediction = tf.nn.in_top_k(logits, labels, k)
+    correct_prediction = tf.cast(correct_prediction, tf.int32)
+    # pred = tf.cast(tf.nn.in_top_k(logits, labels, k=1), tf.float32)
+    n_corrects = tf.reduce_sum(correct_prediction,name='correct_n')
+    tf.summary.scalar('correct_ones', n_corrects)
+    return n_corrects
+
+
+def loss(logits, labels, isFinalLossOnly=False):
+    labels=tf.cast(labels, tf.int64)
+    cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels, name='cross_entropy_per_example')
+    cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy')
+    tf.add_to_collection('losses', cross_entropy_mean)
+    if isFinalLossOnly:
+        return cross_entropy_mean
+    else:
+        return tf.add_n(tf.get_collection('losses'), 'total_losses' )

@@ -208,5 +208,21 @@ An explaination of Batch Normalization can be found @ [here](https://gab41.lab41
 
 Another [implementation](http://r2rt.com/implementing-batch-normalization-in-tensorflow.html)
 
-## Understanding   Xavier Initialization
+## Understanding Xavier Initialization and a lot of other initializations
 Check [here](http://andyljones.tumblr.com/post/110998971763/an-explanation-of-xavier-initialization)
+
+
+### Why we need to initialize the weights
+Check [here](http://stats.stackexchange.com/questions/47590/what-are-good-initial-weights-in-a-neural-network/186351#186351)
+
+Briefly speaking, the initialization of weights from  -1/sqrt(d) to 1/sqrt(d) where d is the number of input is to avoid the range of the output too far away from 0 so that the gradients vanish.
+
+But the initialization is conditioned on the prerequisites that the input is 0 mean and 1 variance.
+
+**That's the reason why BN works so well**
+
+### For training a large network
+
+Refer to ResNet
+- Using Batch Normalization
+- 

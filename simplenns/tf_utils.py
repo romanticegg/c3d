@@ -7,7 +7,7 @@ import os
 
 def print_tensor_shape(tensor, name=None):
     if name is None:
-        name = ' '
+        name = tensor.op.name
     print '{:s} : [{:s}]'.format(name, ', '.join(map(str, tensor.get_shape().as_list())))
 
 
@@ -41,6 +41,55 @@ def variable_with_weight_decay(name, shape, initializer=None, wd=None):#, wd=Non
         weight_decay = tf.mul(tf.nn.l2_loss(var), wd, name='weight_loss')
         tf.add_to_collection('losses', weight_decay)
     return var
+
+
+#batch normalization
+def bn(x, isTraining=True, name=None, use_bias=False, moving_average_decay=0.9999, bn_epsilon=0.001):
+    x_shape = x.get_shape()
+    params_shape = x_shape[-1:]
+    if not name:
+        name= "bn"
+
+    # returns a simple bias add operation
+    if use_bias:
+        bias = variable_on_cpu('bias_{:s}'.format(name), params_shape,
+                               initializer=tf.zeros_initializer)
+        return tf.nn.bias_add(x, bias=bias)
+
+
+    axis = list(range(len(x_shape) - 1))
+
+    beta = variable_on_cpu('beta_{:s}'.format(name),
+                           params_shape,
+                           initializer=tf.constant_initializer(0.0))
+    gamma = variable_on_cpu('gamma_{:s}'.format(name),
+                            params_shape,
+                            initializer=tf.constant_initializer(1.0))
+
+    moving_mean = variable_on_cpu('moving_mean_{:s}'.format(name),
+                                  params_shape,
+                                  initializer=tf.constant_initializer(0.0),
+                                  trainable=False)
+    moving_variance = variable_on_cpu('moving_variance_{:s}'.format(name),
+                                      params_shape,
+                                      initializer=tf.constant_initializer(0.0),
+                                      trainable=False)
+
+    if isTraining:
+        mean, variance = tf.nn.moments(x, axis)
+        train_mean = tf.assign(moving_mean,
+                               moving_mean * moving_average_decay + mean * (1 - moving_average_decay))
+        train_var = tf.assign(moving_variance,
+                              moving_variance * moving_average_decay + variance * (1 - moving_average_decay))
+        with tf.control_dependencies([train_mean, train_var]):
+                x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, bn_epsilon, name=name)
+    else:
+
+        #update: after enough iterations, the error goes down to similar...
+        #fixme: find out if the reason is because dataset size and ...
+        x = tf.nn.batch_normalization(x, moving_mean, moving_variance, beta, gamma, bn_epsilon, name=name)
+
+    return x
 
 
 # add histogram and sparisty summary
@@ -78,3 +127,15 @@ def gpu_config(gpu_id=None):
         config = tf.ConfigProto()
 
     return config
+
+
+def print_layer_info(layername, kernel=None, stride=None, reslt=None):
+
+    print 'Layer {:s}'.format(layername)
+    if kernel:
+        print 'Kernel size [{:s}]'.format(', '.join(map(str, kernel)))
+    if stride:
+        print 'Stride size [{:s}]'.format(', '.join(map(str, stride)))
+    if reslt:
+        print 'Result size [{:s}]'.format(', '.join(map(str, reslt)))
+    print '-' * 32

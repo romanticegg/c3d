@@ -27,6 +27,15 @@ def main3():
         x = tf.add(1,2, name=scope.name)
         print x.op.name
 
+# test on tensorflow copy
+def main4():
+    a = tf.get_variable(name='start', shape=[],initializer=tf.constant_initializer(0))
+    b = a
+    a = a+tf.constant(2.0)
+    with tf.Session()as sess:
+        sess.run(tf.initialize_variables(tf.all_variables()))
+        b_val, a_val = sess.run([b,a])
+        print 'b : {:f}\t, a : {:f}'.format(b_val, a_val)
 
 if __name__ == '__main__':
-    main3()
+    main4()
