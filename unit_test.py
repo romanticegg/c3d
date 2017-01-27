@@ -75,6 +75,25 @@ def main2():
     print '# of files {:d}'.format(len(filenames))
     print 'Done'
 
+# test on tf records
+def main3(argv=None):
+
+    with tf.Graph().as_default() as graph:
+        filepath = '/Users/zijwei/Dev/datasets/UCF-101-16-tfrecords'
+        # tf_images, tf_lb, tf_filename, tf_sampl_start, d, h, w, c = c3d_input_ucf101.inputs(filepath)
+        tf_images, tf_lb= c3d_input_ucf101.inputs(filepath)
+        with tf.Session() as sess:
+            sess.run(tf.variables_initializer(tf.global_variables()))
+
+            coord = tf.train.Coordinator()
+            threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+            for i in range(100):
+                images, labels= sess.run([tf_images, tf_lb])
+                # print 'i: {:d}, Name: {:s}, Label {:d}, original len: {:d}, sample_start: {:d}, image size [{:s}]'.format(i, filename, labels, d_, sample_start, ', '.join(map(str, images.shape)))
+                print 'Debug'
+            coord.request_stop()
+            coord.join(threads=threads)
+
 
 if __name__ == "__main__":
     main1()

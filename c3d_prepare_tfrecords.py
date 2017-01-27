@@ -1,16 +1,36 @@
+# save data to tfrecord formats
 import tensorflow as tf
-import c3d_input_ucf101
-from c3d_ucf101_badcase import  load_pathnlabel
 import glob
 import os
-from scipy.ndimage  import imread
+from scipy.ndimage import imread
 import numpy as np
 import utils
 
-NUM_FRAMES_PER_CLIP = 16
-IMAGE_FORMAT = 'jpg'
-TF_RECORD_DIR = '/Users/zijwei/Dev/datasets/UCF-101-16-tfrecords'
-TF_FORMAT ='tfrecord'
+
+def load_pathnlabel(filepath, abs_path=None, strip_symb=None):
+
+    if not strip_symb:
+        strip_symb = '\r\n'
+    if not abs_path:
+        abs_path = ''
+
+    filenames = []
+    labels = []
+
+    with open(filepath, 'r') as f:
+        raw_lines = f.readlines()
+        for line in raw_lines:
+            line_content = line.strip(strip_symb).split()
+            s_path, ext = os.path.splitext(line_content[0])     # keep out of the .avi
+
+            s_label = int(line_content[1])-1        #id starting from 0
+
+            if abs_path:
+                s_path=os.path.join(abs_path, s_path)
+            filenames.append(s_path)
+            labels.append(s_label)
+    return filenames, labels
+
 
 def _int64_feature(value):
   return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
@@ -19,48 +39,69 @@ def _int64_feature(value):
 def _bytes_feature(value):
   return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
-def main1():
-    filepath = '/Users/zijwei/Dev/datasets/UCF101-split/testlist01_01.txt'
-    abs_path = '/Users/zijwei/Dev/datasets/UCF-101'
+flags = tf.app.flags
+flags.DEFINE_string('annofile_path', '/Users/zijwei/Dev/datasets/UCF101-split/testlist01_01.txt',
+                    'annotation file in format (filename label)[/Users/zijwei/Dev/datasets]')
+flags.DEFINE_string("abs_path", '/Users/zijwei/Dev/datasets/UCF-101', "added to filename in annotation file to make a valid path")
+flags.DEFINE_string('save_dir', '/Users/zijwei/Dev/datasets/UCF-101-g16/test', 'save to [/Users/zijwei/Dev/datasets/UCF-101-g16/test]')
+flags.DEFINE_string('image_format', 'jpg', 'frame format in directories[jpg]')
+flags.DEFINE_string('tf_format', 'tfrecord', 'saved tfrecord format[tfrecord]')
+flags.DEFINE_integer('min_len', 16, 'min length of videos [16]')
 
-    save_dir = utils.get_dir(TF_RECORD_DIR)
+FLAGS = flags.FLAGS
 
-    filenames, labels = load_pathnlabel(filepath, abs_path=abs_path)
-    assert  len(filenames)==len(labels)
 
-    filenames_patrn = []
-    updated_labels = []
-    for s_label, s_filename in zip(labels, filenames):
-        if len(glob.glob(os.path.join(s_filename,'*.{:s}'.format(IMAGE_FORMAT))))<NUM_FRAMES_PER_CLIP:
-            # print '{:s} do NOT have more than {:d} frames'.format(s_filename, NUM_FRAMES_PER_CLIP)
-            continue
-        filenames_patrn.append(os.path.join(s_filename, '*.{:s}'.format(IMAGE_FORMAT)))
-        updated_labels.append(s_label)
-    assert len(updated_labels)==len(filenames_patrn)
+def main(argv=None):
 
-    print '# of files {:d}, valid ones: {:d}'.format(len(filenames), len(filenames_patrn))
+    save_dir = utils.get_dir(FLAGS.save_dir)
 
-    for i, s_label, s_filename_pattern in zip(range(len(filenames_patrn)), updated_labels, filenames_patrn):
-        filename_stem = s_filename_pattern.split(os.sep)[-2]
+    file_paths, labels = load_pathnlabel(FLAGS.annofile_path, abs_path=FLAGS.abs_path)
+    assert len(file_paths) == len(labels)
 
-        print 'Processing {:d} | {:d} \t {:s}'.format(i, len(filenames_patrn), filename_stem)
-        file_list = glob.glob(s_filename_pattern)
+    wrtie_videoframes_to_tfrecord(file_paths, labels, save_dir, frame_limit=FLAGS.min_len)
+
+
+def wrtie_videoframes_to_tfrecord(file_paths, labels, save_dir, frame_limit=None):
+
+    assert len(file_paths) == len(labels), 'Files and labels mismatch'
+    print 'Total # of files {:d}'.format(len(file_paths))
+
+    save_dir = utils.get_dir(save_dir)
+
+    # filter away
+    if frame_limit:
+        filtered_pairs = [(f, l) for f, l in zip(file_paths, labels)
+                          if len(glob.glob(os.path.join(f,'*.{:s}'.format(FLAGS.image_format)))) >= frame_limit]
+
+        file_paths, labels = zip(*filtered_pairs)
+        assert len(file_paths) == len(labels), 'Checking filtering'
+
+    n_files = len(file_paths)
+    print '# of valid videos: {:d}'.format(n_files)
+
+    for i, s_label, s_filename in zip(range(n_files), labels, file_paths):
+
+        filename_stem = s_filename.split(os.sep)[-1]
+        print 'Processing {:d} | {:d} \t {:s}'.format(i, n_files, filename_stem)
+        file_list = glob.glob(os.path.join(s_filename, '*.{:s}'.format(FLAGS.image_format)))
         n_images = len(file_list)
-        image_seq = []
+        images = []
 
-        tf_save_name = os.path.join(save_dir, '{:s}.{:s}'.format(filename_stem, TF_FORMAT))
+        tf_save_name = os.path.join(save_dir, '{:s}.{:s}'.format(filename_stem, FLAGS.tf_format))
         writer = tf.python_io.TFRecordWriter(tf_save_name)
+
         for single_filename in file_list:
             img = imread(single_filename, mode='RGB')
-            image_seq.append(img)
+            images.append(img)
 
-        np_image_seq = np.array(image_seq).astype(np.uint8)
-        seq_shape = np_image_seq.shape
+        np_images = np.array(images).astype(np.uint8)
+        seq_shape = np_images.shape
         seq_d = seq_shape[0]    # depth, length of seq
+        assert n_images==seq_d
         seq_h = seq_shape[1]    # height
         seq_w = seq_shape[2]    # width
         seq_c = seq_shape[3]    # channels
-        image_raw = np_image_seq.tostring()
+        image_raw = np_images.tostring()
         example = tf.train.Example(features=tf.train.Features(feature={
             'd': _int64_feature(seq_d),
             'h': _int64_feature(seq_h),
@@ -72,28 +113,10 @@ def main1():
 
         writer.write(example.SerializeToString())
 
-        print 'Debug'
-
     print 'Done'
 
 
-def main(argv=None):
 
-    with tf.Graph().as_default() as graph:
-        filepath = '/Users/zijwei/Dev/datasets/UCF-101-16-tfrecords'
-        # tf_images, tf_lb, tf_filename, tf_sampl_start, d, h, w, c = c3d_input_ucf101.inputs(filepath)
-        tf_images, tf_lb= c3d_input_ucf101.inputs(filepath)
-        with tf.Session() as sess:
-            sess.run(tf.variables_initializer(tf.global_variables()))
-
-            coord = tf.train.Coordinator()
-            threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-            for i in range(100):
-                images, labels= sess.run([tf_images, tf_lb])
-                # print 'i: {:d}, Name: {:s}, Label {:d}, original len: {:d}, sample_start: {:d}, image size [{:s}]'.format(i, filename, labels, d_, sample_start, ', '.join(map(str, images.shape)))
-                print 'Debug'
-            coord.request_stop()
-            coord.join(threads=threads)
 
 if __name__ == "__main__":
     tf.app.run()
