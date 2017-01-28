@@ -40,10 +40,10 @@ def _bytes_feature(value):
   return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
 flags = tf.app.flags
-flags.DEFINE_string('annofile_path', '/Users/zijwei/Dev/datasets/UCF101-split/testlist01_01.txt',
+flags.DEFINE_string('annofile_path', '/Users/zijwei/Dev/datasets/UCF101-split/trainlist01.txt',
                     'annotation file in format (filename label)[/Users/zijwei/Dev/datasets]')
 flags.DEFINE_string("abs_path", '/Users/zijwei/Dev/datasets/UCF-101', "added to filename in annotation file to make a valid path")
-flags.DEFINE_string('save_dir', '/Users/zijwei/Dev/datasets/UCF-101-g16/test', 'save to [/Users/zijwei/Dev/datasets/UCF-101-g16/test]')
+flags.DEFINE_string('save_dir', '/Users/zijwei/Dev/datasets/UCF-101-g16/train', 'save to [/Users/zijwei/Dev/datasets/UCF-101-g16/test]')
 flags.DEFINE_string('image_format', 'jpg', 'frame format in directories[jpg]')
 flags.DEFINE_string('tf_format', 'tfrecord', 'saved tfrecord format[tfrecord]')
 flags.DEFINE_integer('min_len', 16, 'min length of videos [16]')

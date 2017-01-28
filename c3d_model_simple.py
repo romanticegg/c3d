@@ -29,8 +29,9 @@ NUM_CLASSES = 101
 CROP_SIZE = 128
 CHANNELS = 3
 NUM_FRAMES_PER_CLIP = 16
-#todo: check this number:
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 10000
+#todo: check this number for UCF 101
+NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 8984
+NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 3498
 
 # Constants describing the training process.
 MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
@@ -153,9 +154,6 @@ def loss(logits, labels, isFinalLossOnly=False):
         return cross_entropy_mean
     else:
         return tf.add_n(tf.get_collection('losses'), 'total_losses' )
-
-
-
 
 
 def train(total_loss, global_step, decay_every_n_step=None):
