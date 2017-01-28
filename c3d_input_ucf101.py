@@ -87,7 +87,8 @@ def inputs(filepath, isTraining=True):
     tf_image_seq = tf.transpose(tf_image_seq, [3, 0, 1, 2])
 
     min_queue_examples = 32
-    num_preprocess_thread = 16
+    # fixme: change to 1 for debugging
+    num_preprocess_thread = 1
 
     if isTraining:
         batch_images, batch_labels, batch_filenames = tf.train.shuffle_batch([tf_image_seq, tf_image_lb, tf_filename], batch_size=FLAGS.batch_size,
