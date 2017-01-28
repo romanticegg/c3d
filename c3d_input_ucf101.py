@@ -61,7 +61,10 @@ def inputs(filepath, isTraining=True):
 
     #todo: processing images when evaluating
     # get length to be 16
-    sample_start = tf.random_uniform([], minval=0, maxval=tf_image_d-NUM_FRAMES_PER_CLIP, dtype=tf.int32)
+
+    sample_start =tf.cond(tf_image_d > NUM_FRAMES_PER_CLIP,
+                          lambda: tf.random_uniform([], minval=0, maxval=tf_image_d-NUM_FRAMES_PER_CLIP, dtype=tf.int32),
+                          lambda: 0)
     tf_image_seq = tf.slice(tf_image_seq, [sample_start, 0, 0, 0],
                             [NUM_FRAMES_PER_CLIP, tf_image_h, tf_image_w, tf_image_c])
     # resize
