@@ -14,7 +14,7 @@ FLAGS = flags.FLAGS
 def main(argv=None):
     with tf.Graph().as_default() as graph:
         # tf_images, tf_lb, tf_filename, tf_sampl_start, d, h, w, c = c3d_input_ucf101.inputs(filepath)
-        tf_images, tf_lb, tf_fnames = c3d_input_ucf101.inputs(FLAGS.file_path, isTraining=True)
+        tf_images, tf_lb, tf_fnames = c3d_input_ucf101.inputs(FLAGS.file_path, isTraining=False)
         config = tf_utils.gpu_config(FLAGS.gpu_id)
 
         with tf.Session(config=config) as sess:
