@@ -21,9 +21,9 @@ TF_FORMAT = 'tfrecord'
 
 # given a directory, return batch directly fed into the graph
 # todo: add evaluation part, will evaluate based on different spatial and temporal offsets
-def inputs(filepath, isTraining=True):
-    filepattern = os.path.join(filepath, '*.{:s}'.format(TF_FORMAT))
-    tf_filelist = tf.matching_files(filepattern)
+def inputs(tf_filelist, isTraining=True):
+    # filepattern = os.path.join(filepath, '*.{:s}'.format(TF_FORMAT))
+    # tf_filelist = tf.matching_files(filepattern)
 
     if isTraining:
         filenameQ = tf.train.string_input_producer(tf_filelist, shuffle=True)
@@ -89,7 +89,7 @@ def inputs(filepath, isTraining=True):
     min_queue_examples = 32
     # fixme: change to 1 for debugging!!
     # todo: change back!
-    num_preprocess_thread = 16
+    num_preprocess_thread = 1
 
     if isTraining:
         batch_images, batch_labels, batch_filenames = tf.train.shuffle_batch([tf_image_seq, tf_image_lb, tf_filename], batch_size=FLAGS.batch_size,

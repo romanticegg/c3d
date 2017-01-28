@@ -1,10 +1,12 @@
 # check if the tfrecord is well done:
 import tensorflow as tf
-import c3d_input_ucf101
+import c3d_input_ucf101_check
 import tf_utils
-
+import glob
+import os
 flags = tf.app.flags
 flags.DEFINE_string('file_path', '/Users/zijwei/Dev/datasets/UCF-101-g16/train', 'Path to check the files')
+flags.DEFINE_integer('start_id', 0, 'starting file id')
 flags.DEFINE_integer('batch_size', 1, 'Batch size[1]')
 flags.DEFINE_integer('gpu_id', None, 'GPU [None]')
 
@@ -14,7 +16,9 @@ FLAGS = flags.FLAGS
 def main(argv=None):
     with tf.Graph().as_default() as graph:
         # tf_images, tf_lb, tf_filename, tf_sampl_start, d, h, w, c = c3d_input_ucf101.inputs(filepath)
-        tf_images, tf_lb, tf_fnames = c3d_input_ucf101.inputs(FLAGS.file_path, isTraining=False)
+        files = glob.glob(os.path.join(FLAGS.file_path, '*.{:s}'.format(c3d_input_ucf101_check.TF_FORMAT)))
+        files = files[FLAGS.start_id:]
+        tf_images, tf_lb, tf_fnames = c3d_input_ucf101_check.inputs(files, isTraining=False)
         config = tf_utils.gpu_config(FLAGS.gpu_id)
 
         with tf.Session(config=config) as sess:
