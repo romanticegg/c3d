@@ -3,7 +3,7 @@ import c3d_model_simple as c3d_model
 import tf_easy_dir
 import utils
 import tf_utils
-import c3d_input_ucf101_eval as c3d_inputs
+import c3d_input_ucf101 as c3d_inputs
 import os
 import numpy as np
 import math
