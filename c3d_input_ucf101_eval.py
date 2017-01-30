@@ -73,43 +73,6 @@ def inputs(filepath):
     # tf_image_lb = tf.expand_dims(tf_image_lb, axis=0)
 
     # update 2: eval just as the way we do in training:
-    # sample_start = tf.cond(tf_image_d > NUM_FRAMES_PER_CLIP,
-    #                        lambda: tf.random_uniform([], minval=0, maxval=tf_image_d - NUM_FRAMES_PER_CLIP,
-    #                                                  dtype=tf.int32),
-    #                        lambda: tf.constant(0))
-    # tf_image_seq = tf.slice(tf_image_seq, [sample_start, 0, 0, 0],
-    #                         [NUM_FRAMES_PER_CLIP, tf_image_h, tf_image_w, tf_image_c])
-    # # resize
-    # tf_image_seq = tf.image.resize_images(tf_image_seq, [NEW_HEIGHT, NEW_WIDTH])
-    #
-    # # current: [d, h, w, c]  --> [h, w, c, d]
-    # tf_image_seq = tf.transpose(tf_image_seq, [1, 2, 3, 0])
-    # # [h, w, c, d] --> [h, w, c*d]
-    # tf_image_seq = tf.reshape(tf_image_seq, [NEW_HEIGHT, NEW_WIDTH, NUM_FRAMES_PER_CLIP * 3])
-    # # image crop:
-    # tf_image_seq = tf.image.resize_image_with_crop_or_pad(tf_image_seq, CROP_SIZE, CROP_SIZE)
-    #
-    # # randome image operation:
-    # # tf_image_seq = tf.image.random_flip_left_right(tf_image_seq)
-    # tf_image_seq = tf.image.per_image_standardization(tf_image_seq)
-    #
-    # # move back to [d, h, w, c]
-    # tf_image_seq = tf.reshape(tf_image_seq, [CROP_SIZE, CROP_SIZE, 3, NUM_FRAMES_PER_CLIP])
-    # tf_image_seq = tf.transpose(tf_image_seq, [3, 0, 1, 2])
-    #
-    # min_queue_examples = 32
-
-    # num_preprocess_thread = 16
-    #
-    # tf_image_seq, tf_image_lb, tf_filename = tf.train.batch([tf_image_seq, tf_image_lb, tf_filename],
-    #                                                                  batch_size=FLAGS.batch_size,
-    #                                                                  num_threads=num_preprocess_thread,
-    #                                                                  enqueue_many=False,
-    #                                                                  capacity=min_queue_examples + 3 * FLAGS.batch_size)
-
-
-
-    # update 3: dense eval but based on the fixed video length [NEW_HEIGHT, NEW_WIDTH,NUM_FRAMES_PER_CLIP]
     sample_start = tf.cond(tf_image_d > NUM_FRAMES_PER_CLIP,
                            lambda: tf.random_uniform([], minval=0, maxval=tf_image_d - NUM_FRAMES_PER_CLIP,
                                                      dtype=tf.int32),
@@ -123,10 +86,15 @@ def inputs(filepath):
     tf_image_seq = tf.transpose(tf_image_seq, [1, 2, 3, 0])
     # [h, w, c, d] --> [h, w, c*d]
     tf_image_seq = tf.reshape(tf_image_seq, [NEW_HEIGHT, NEW_WIDTH, NUM_FRAMES_PER_CLIP * 3])
+    # image crop:
+    tf_image_seq = tf.image.resize_image_with_crop_or_pad(tf_image_seq, CROP_SIZE, CROP_SIZE)
+
+    # randome image operation:
+    # tf_image_seq = tf.image.random_flip_left_right(tf_image_seq)
     tf_image_seq = tf.image.per_image_standardization(tf_image_seq)
 
     # move back to [d, h, w, c]
-    tf_image_seq = tf.reshape(tf_image_seq, [NEW_HEIGHT, NEW_WIDTH, 3, NUM_FRAMES_PER_CLIP])
+    tf_image_seq = tf.reshape(tf_image_seq, [CROP_SIZE, CROP_SIZE, 3, NUM_FRAMES_PER_CLIP])
     tf_image_seq = tf.transpose(tf_image_seq, [3, 0, 1, 2])
 
     min_queue_examples = 32
@@ -138,6 +106,38 @@ def inputs(filepath):
                                                                      num_threads=num_preprocess_thread,
                                                                      enqueue_many=False,
                                                                      capacity=min_queue_examples + 3 * FLAGS.batch_size)
+
+
+
+    # update 3: dense eval but based on the fixed video length [NEW_HEIGHT, NEW_WIDTH,NUM_FRAMES_PER_CLIP]
+    # sample_start = tf.cond(tf_image_d > NUM_FRAMES_PER_CLIP,
+    #                        lambda: tf.random_uniform([], minval=0, maxval=tf_image_d - NUM_FRAMES_PER_CLIP,
+    #                                                  dtype=tf.int32),
+    #                        lambda: tf.constant(0))
+    # tf_image_seq = tf.slice(tf_image_seq, [sample_start, 0, 0, 0],
+    #                         [NUM_FRAMES_PER_CLIP, tf_image_h, tf_image_w, tf_image_c])
+    # # resize
+    # tf_image_seq = tf.image.resize_images(tf_image_seq, [NEW_HEIGHT, NEW_WIDTH])
+    #
+    # # current: [d, h, w, c]  --> [h, w, c, d]
+    # tf_image_seq = tf.transpose(tf_image_seq, [1, 2, 3, 0])
+    # # [h, w, c, d] --> [h, w, c*d]
+    # tf_image_seq = tf.reshape(tf_image_seq, [NEW_HEIGHT, NEW_WIDTH, NUM_FRAMES_PER_CLIP * 3])
+    # tf_image_seq = tf.image.per_image_standardization(tf_image_seq)
+    #
+    # # move back to [d, h, w, c]
+    # tf_image_seq = tf.reshape(tf_image_seq, [NEW_HEIGHT, NEW_WIDTH, 3, NUM_FRAMES_PER_CLIP])
+    # tf_image_seq = tf.transpose(tf_image_seq, [3, 0, 1, 2])
+    #
+    # min_queue_examples = 32
+    #
+    # num_preprocess_thread = 16
+    #
+    # tf_image_seq, tf_image_lb, tf_filename = tf.train.batch([tf_image_seq, tf_image_lb, tf_filename],
+    #                                                                  batch_size=FLAGS.batch_size,
+    #                                                                  num_threads=num_preprocess_thread,
+    #                                                                  enqueue_many=False,
+    #                                                                  capacity=min_queue_examples + 3 * FLAGS.batch_size)
     return tf_image_seq, tf_image_lb, tf_filename
 
 

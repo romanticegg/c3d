@@ -15,6 +15,8 @@ flags.DEFINE_integer('batch_size', 30, 'batch size[30]')
 flags.DEFINE_boolean('rewrite', False, 'If rewrite training logs to save_name[False]')
 flags.DEFINE_integer('max_steps', 50000, 'Number of training steps[50000]')
 flags.DEFINE_integer('gpu_id', None, 'GPU ID [None]')
+flags.DEFINE_float('init_lr', 0.1, 'initial learning rate[0.1]')
+flags.DEFINE_float('weight_decay', 0.004, 'weight decay for fully connected layers [0.004]')
 FLAGS = flags.FLAGS
 
 def main(argv=None):

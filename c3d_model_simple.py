@@ -22,6 +22,11 @@ forward to make predictions.
 
 import tensorflow as tf
 from tf_utils import variable_on_cpu, variable_with_weight_decay, bn, print_tensor_shape
+
+
+FLAGS = tf.app.flags.FLAGS
+
+
 # The UCF-101 dataset has 101 classes
 NUM_CLASSES = 101
 
@@ -37,9 +42,8 @@ NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 3498
 MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
 NUM_EPOCHS_PER_DECAY = 4.0      # Epochs after which learning rate decays.
 LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
-INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
+INITIAL_LEARNING_RATE = 0.01       # Initial learning rate.
 
-FLAGS = tf.app.flags.FLAGS
 
 # note:
 #input: [batch, in_depth, in_height, in_width, in_channels]
