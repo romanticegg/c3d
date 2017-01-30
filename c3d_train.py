@@ -7,13 +7,14 @@ import os
 import glob
 import tf_utils
 import numpy as np
+import sys
 
 flags = tf.app.flags
 flags.DEFINE_string('file_path', '/Users/zijwei/Dev/datasets/UCF-101-g16/train', 'directory to save training data[/Users/zijwei/Dev/datasets]')
 flags.DEFINE_string("save_name", None, "Directory in which to save output of this run[Currentdate such as 2017-01...]")
 flags.DEFINE_integer('batch_size', 12, 'batch size[12]')
 flags.DEFINE_boolean('rewrite', False, 'If rewrite training logs to save_name[False]')
-flags.DEFINE_integer('max_steps', 50000, 'Number of training steps[100000]')
+flags.DEFINE_integer('max_steps', 100000, 'Number of training steps[100000]')
 flags.DEFINE_integer('gpu_id', None, 'GPU ID [None]')
 flags.DEFINE_float('init_lr', 0.1, 'initial learning rate[0.05]')
 flags.DEFINE_float('weight_decay_conv', 0.0, 'weight decay for convolutional layers [0.0]')
@@ -42,6 +43,7 @@ def main(argv=None):
         print 'size of image input: [{:s}]'.format(', '.join(map(str, batch_images.get_shape().as_list())))
         print 'size of labels : [{:s}]'.format(', '.join(map(str, batch_labels.get_shape().as_list())))
         print '-'*32
+        sys.stdout.flush()
 
         logits = c3d_model.inference_c3d(batch_images, isTraining=True)
         loss =c3d_model.loss(logits=logits, labels=batch_labels)
@@ -67,6 +69,7 @@ def main(argv=None):
                 # if (i+1) % 10 == 0:
                 print '[{:s} -- {:08d}|{:08d}]\tloss : {:.3f}\t, correct ones [{:d}|{:d}]'.format(save_dir, i, FLAGS.max_steps,
                                                                                           loss_, correct_ones_, FLAGS.batch_size)
+                sys.stdout.flush()
                 if (i+1 % 100) ==0:
                     summary_ = sess.run(summary_op)
                     summary_writer.add_summary(summary_, global_step=global_step)

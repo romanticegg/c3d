@@ -3,12 +3,13 @@ A set of helper functions for tensorflow
 """
 import tensorflow as tf
 import os
-
+import sys
 
 def print_tensor_shape(tensor, name=None):
     if name is None:
         name = tensor.op.name
     print '{:s} : [{:s}]'.format(name, ', '.join(map(str, tensor.get_shape().as_list())))
+    sys.stdout.flush()
 
 
 def get_all_names():
@@ -139,3 +140,4 @@ def print_layer_info(layername, kernel=None, stride=None, reslt=None):
     if reslt:
         print 'Result size [{:s}]'.format(', '.join(map(str, reslt)))
     print '-' * 32
+    sys.stdout.flush()
