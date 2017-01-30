@@ -53,12 +53,12 @@ def inputs(filepath):
     # image_sparse = tf.sparse_tensor_to_dense(features['image'])
     tf_image_seq = tf.decode_raw(features['image'], tf.uint8)
     tf_image_seq = tf.reshape(tf_image_seq, tf.pack([tf_image_d, tf_image_h, tf_image_w, tf_image_c]))
-    tf_image_seq = tf.image.per_image_standardization(tf_image_seq)
 
     tf_filename = features['filename']
     tf_image_lb =features['label']
 
     # update 1: return the original video for evaluation, since our network is fully convo:
+    # tf_image_seq = tf.image.per_image_standardization(tf_image_seq)
     # tf_image_seq = tf.expand_dims(tf_image_seq, axis=0)
 
     # update 2: eval just as the way we do in training:
