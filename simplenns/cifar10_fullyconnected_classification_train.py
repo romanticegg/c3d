@@ -1,7 +1,7 @@
 # a fully connected version of cifar 10
 import tensorflow as tf
 import utils
-import tf_utils
+import tf_utils_inner
 import os
 import sys
 import tarfile

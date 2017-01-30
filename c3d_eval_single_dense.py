@@ -25,6 +25,8 @@ FLAGS = flags.FLAGS
 def eval():
 
     NUM_EXAMPLES_FOR_EVAL = len(glob.glob(os.path.join(FLAGS.data_dir, '*.{:s}'.format(c3d_inputs.TF_FORMAT))))
+    print 'Number of Examples for evaluation\t{:d}'.format(NUM_EXAMPLES_FOR_EVAL)
+    
     with tf.Graph().as_default() as graph:
         [batch_images, batch_labels,_] = c3d_inputs.inputs(FLAGS.data_dir)
 

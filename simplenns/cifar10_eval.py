@@ -2,7 +2,7 @@ import tensorflow as tf
 import cifar10_fc_v4 as cifar10_model
 import tf_easy_dir
 import utils
-import tf_utils
+import tf_utils_inner
 import cifar10_inputs
 import os
 import numpy as np
@@ -40,7 +40,7 @@ def eval():
         saver = tf.train.Saver(variables_to_restore)
         # saver = tf.train.Saver()
 
-        config = tf_utils.gpu_config(FLAGS.gpu_id)
+        config = tf_utils_inner.gpu_config(FLAGS.gpu_id)
         with tf.Session(config=config) as sess:
             sess.run(tf.variables_initializer(tf.global_variables()))
             saver.restore(sess=sess,save_path=FLAGS.model)

@@ -2,7 +2,7 @@ import tensorflow as tf
 import cifar10_fc_v4 as cifar10_model
 import tf_easy_dir
 import utils
-import tf_utils
+import tf_utils_inner
 import cifar10_inputs
 import os
 import numpy as np
@@ -45,7 +45,7 @@ def train():
         saver = tf.train.Saver(max_to_keep=None)
         summary_op = tf.summary.merge_all()
 
-        config = tf_utils.gpu_config(FLAGS.gpu_id)
+        config = tf_utils_inner.gpu_config(FLAGS.gpu_id)
         with tf.Session(config=config) as sess:
             sess.run(tf.variables_initializer(tf.global_variables()))
             summary_writer = tf.summary.FileWriter(logdir=save_locations.summary_save_dir, graph=sess.graph)

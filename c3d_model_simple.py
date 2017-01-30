@@ -21,7 +21,7 @@ forward to make predictions.
 """
 
 import tensorflow as tf
-from simplenns.tf_utils import variable_on_cpu, variable_with_weight_decay, bn, print_tensor_shape
+from tf_utils import variable_on_cpu, variable_with_weight_decay, bn, print_tensor_shape
 # The UCF-101 dataset has 101 classes
 NUM_CLASSES = 101
 

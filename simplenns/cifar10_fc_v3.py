@@ -6,7 +6,7 @@ import os
 import sys
 import tarfile
 import tf_easy_dir
-from tf_utils import variable_with_weight_decay, variable_on_cpu, activation_summary
+from tf_utils_inner import variable_with_weight_decay, variable_on_cpu, activation_summary
 import cifar10_inputs as inputs
 #todo: add batchnorm and VGG like 3*3 structure
 NUM_CLASSES = 10
