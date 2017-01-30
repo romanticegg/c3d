@@ -63,8 +63,10 @@ def inputs(filepath):
     tf_image_seq = tf.transpose(tf_image_seq, [1, 2, 3, 0])
     # [h, w, c, d] --> [h, w, c*d]
     tf_image_seq= tf.reshape(tf_image_seq, tf.pack([tf_image_h, tf_image_w, tf_image_c * tf_image_d]))
+    tf_image_seq = tf.image.resize_image_with_crop_or_pad(tf_image_seq, NEW_HEIGHT, NEW_WIDTH)
+
     tf_image_seq = tf.image.per_image_standardization(tf_image_seq)
-    tf_image_seq = tf.reshape(tf_image_seq, tf.pack([tf_image_h, tf_image_w, tf_image_c, tf_image_d]))
+    tf_image_seq = tf.reshape(tf_image_seq, tf.pack([NEW_HEIGHT, NEW_WIDTH, tf_image_c, tf_image_d]))
     tf_image_seq = tf.transpose(tf_image_seq, [3, 0, 1, 2])
 
     tf_image_seq = tf.expand_dims(tf_image_seq, axis=0)
