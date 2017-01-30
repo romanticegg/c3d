@@ -3,7 +3,7 @@ import c3d_model_simple as c3d_model
 import tf_easy_dir
 import utils
 import tf_utils
-import c3d_input_ucf101 as c3d_inputs
+import c3d_input_ucf101_eval as c3d_inputs
 import os
 import numpy as np
 import math
@@ -26,7 +26,7 @@ def eval():
 
     NUM_EXAMPLES_FOR_EVAL = len(glob.glob(os.path.join(FLAGS.data_dir, '*.{:s}'.format(c3d_inputs.TF_FORMAT))))
     with tf.Graph().as_default() as graph:
-        [batch_images, batch_labels,_] = c3d_inputs.inputs(FLAGS.data_dir, isTraining=False)
+        [batch_images, batch_labels,_] = c3d_inputs.inputs(FLAGS.data_dir)
 
         print 'size of image input: [{:s}]'.format(', '.join(map(str, batch_images.get_shape().as_list())))
         print 'size of labels : [{:s}]'.format(', '.join(map(str, batch_labels.get_shape().as_list())))
