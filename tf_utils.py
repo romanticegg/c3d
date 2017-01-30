@@ -92,8 +92,8 @@ def bn(x, isTraining=True, name=None, use_bias=False, moving_average_decay=0.999
 
         #update 2: ignoring the learned variance and so on, only using the learned beta and gamma
         #fixme:
-        mean, variance = tf.nn.moments(x, axis)
-        x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, bn_epsilon, name=name)
+        # mean, variance = tf.nn.moments(x, axis)
+        x = tf.nn.batch_normalization(x, moving_mean, moving_variance, beta, gamma, bn_epsilon, name=name)
     return x
 
 
