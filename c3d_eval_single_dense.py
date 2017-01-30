@@ -3,7 +3,7 @@ import c3d_model_simple as c3d_model
 import tf_easy_dir
 import utils
 import tf_utils
-import c3d_input_ucf101 as c3d_inputs
+import c3d_input_ucf101_eval as c3d_inputs
 import os
 import numpy as np
 import math
@@ -26,7 +26,7 @@ def eval():
 
     NUM_EXAMPLES_FOR_EVAL = len(glob.glob(os.path.join(FLAGS.data_dir, '*.{:s}'.format(c3d_inputs.TF_FORMAT))))
     print 'Number of Examples for evaluation\t{:d}'.format(NUM_EXAMPLES_FOR_EVAL)
-    
+
     with tf.Graph().as_default() as graph:
         [batch_images, batch_labels,_] = c3d_inputs.inputs(FLAGS.data_dir)
 

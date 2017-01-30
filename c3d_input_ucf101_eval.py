@@ -57,8 +57,16 @@ def inputs(filepath):
     tf_filename = features['filename']
     tf_image_lb =features['label']
 
-    # update 1: return the original video for evaluation, since our network is fully convo:
+    # update 1 (dense eval): return the original video for evaluation, since our network is fully conv:
+
+    # current: [d, h, w, c]  --> [h, w, c, d]
+    tf_image_seq = tf.transpose(tf_image_seq, [1, 2, 3, 0])
+    # [h, w, c, d] --> [h, w, c*d]
+    tf_image_seq= tf.reshape(tf_image_seq, tf.pack([tf_image_h, tf_image_w, tf_image_c * tf_image_d]))
     tf_image_seq = tf.image.per_image_standardization(tf_image_seq)
+    tf_image_seq = tf.reshape(tf_image_seq, tf.pack([tf_image_h, tf_image_w, tf_image_c, tf_image_d]))
+    tf_image_seq = tf.transpose(tf_image_seq, [3, 0, 1, 2])
+
     tf_image_seq = tf.expand_dims(tf_image_seq, axis=0)
 
     # update 2: eval just as the way we do in training:
