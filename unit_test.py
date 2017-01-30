@@ -157,6 +157,15 @@ def main6(argv=None):
             print 'Debug'
 
 
-if __name__ == '__main__':
-    tf.app.run()
+import time
+import progressbar
 
+def main7():
+    bar = progressbar.ProgressBar(redirect_stdout=True)
+    for i in range(100):
+        print 'Some text', i
+        time.sleep(0.1)
+        bar.update(i)
+
+if __name__ == '__main__':
+    main7()

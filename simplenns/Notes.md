@@ -225,4 +225,7 @@ But the initialization is conditioned on the prerequisites that the input is 0 m
 
 Refer to ResNet
 - Using Batch Normalization
-- 
+- Update the structure to make better predictions
+
+## Print stuff immediately
+Add `sys.stdout.flush()` right after `print`
