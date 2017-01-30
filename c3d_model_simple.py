@@ -42,7 +42,7 @@ NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 3498
 MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
 NUM_EPOCHS_PER_DECAY = 4.0      # Epochs after which learning rate decays.
 LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
-INITIAL_LEARNING_RATE = 0.01       # Initial learning rate.
+# INITIAL_LEARNING_RATE = 0.01       # Initial learning rate.
 
 
 # note:
@@ -55,9 +55,10 @@ INITIAL_LEARNING_RATE = 0.01       # Initial learning rate.
 def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('conv1') as scope:
-        k1 = variable_with_weight_decay('w', shape=[3, 3, 3, 3, 64], initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.0)
+        k1 = variable_with_weight_decay('w', shape=[3, 3, 3, 3, 64], initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=FLAGS.weight_decay_conv)
         conv1 = tf.nn.conv3d(inputs, k1, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv1')
         conv_bn1 = bn(conv1, isTraining=isTraining)
+        conv_bn1 = tf.nn.relu(conv_bn1)
         print_tensor_shape(conv_bn1)
 
     pool1 = tf.nn.max_pool3d(conv_bn1, ksize=[1, 1, 2, 2, 1], strides=[1, 1, 2, 2, 1], padding='SAME', name='pool1')
@@ -65,9 +66,10 @@ def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('conv2') as scope:
         k2 = variable_with_weight_decay('w', shape=[3, 3, 3, 64, 128],
-                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.0)
+                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=FLAGS.weight_decay_conv)
         conv2 = tf.nn.conv3d(pool1, k2, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv2')
         conv_bn2 = bn(conv2, isTraining=isTraining)
+        conv_bn2 = tf.nn.relu(conv_bn2)
         print_tensor_shape(conv_bn2)
 
     pool2 = tf.nn.max_pool3d(conv_bn2, ksize=[1, 2, 2, 2, 1], strides=[1, 2, 2, 2, 1], padding='SAME', name='pool2')
@@ -75,9 +77,10 @@ def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('conv3') as scope:
         k3 = variable_with_weight_decay('w', shape=[3, 3, 3, 128, 256],
-                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.0)
+                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=FLAGS.weight_decay_conv)
         conv3 = tf.nn.conv3d(pool2, k3, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv3')
         conv_bn3 = bn(conv3, isTraining=isTraining)
+        conv_bn3 = tf.nn.relu(conv_bn3)
         print_tensor_shape(conv_bn3)
 
     pool3 = tf.nn.max_pool3d(conv_bn3, ksize=[1, 2, 2, 2, 1], strides=[1, 2, 2, 2, 1], padding='SAME', name='pool3')
@@ -85,9 +88,10 @@ def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('conv4') as scope:
         k4 = variable_with_weight_decay('w', shape=[3, 3, 3, 256, 256],
-                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.0)
+                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=FLAGS.weight_decay_conv)
         conv4 = tf.nn.conv3d(pool3, k4, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv4')
         conv_bn4 = bn(conv4, isTraining=isTraining)
+        conv_bn4 =tf.nn.relu(conv_bn4)
         print_tensor_shape(conv_bn4)
 
     pool4 = tf.nn.max_pool3d(conv_bn4, ksize=[1, 2, 2, 2, 1], strides=[1, 2, 2, 2, 1], padding='SAME', name='pool4')
@@ -95,9 +99,10 @@ def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('conv5') as scope:
         k5 = variable_with_weight_decay('w', shape=[3, 3, 3, 256, 256],
-                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.0)
+                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=FLAGS.weight_decay_conv)
         conv5 = tf.nn.conv3d(pool4, k5, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv5')
         conv_bn5 = bn(conv5, isTraining=isTraining)
+        conv_bn5 = tf.nn.relu(conv_bn5)
         print_tensor_shape(conv_bn5)
 
     pool5 = tf.nn.max_pool3d(conv_bn5, ksize=[1, 2, 2, 2, 1], strides=[1, 2, 2, 2, 1], padding='SAME', name='pool5')
@@ -105,14 +110,14 @@ def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('fc1') as scope:
         kfc1 = variable_with_weight_decay('w', shape=[1, 4, 4, 256, 2048],
-                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.004)
+                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=FLAGS.weight_decay_fc)
         conv_fc1 = tf.nn.conv3d(pool5, kfc1, strides=[1, 1, 1, 1, 1], padding='VALID', name='fc1')
         conv_bn_fc1 = bn(conv_fc1, isTraining=isTraining)
         print_tensor_shape(conv_bn_fc1)
 
     with tf.variable_scope('fc2') as scope:
         kfc2 = variable_with_weight_decay('w', shape=[1, 1, 1, 2048, 2048],
-                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.004)
+                                        initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=FLAGS.weight_decay_fc)
         conv_fc2 = tf.nn.conv3d(conv_bn_fc1, kfc2, strides=[1, 1, 1, 1, 1], padding='VALID', name='fc2')
         conv_bn_fc2 = bn(conv_fc2, isTraining=isTraining)
         print_tensor_shape(conv_bn_fc2)
@@ -120,7 +125,7 @@ def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('classification') as scope:
         weights = variable_with_weight_decay('w', [1, 1, 1, 2048, NUM_CLASSES],
-                                             initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=0.0)
+                                             initializer=tf.truncated_normal_initializer(stddev=5e-2), wd=FLAGS.weight_decay_fc)
         biases = variable_on_cpu('b', [NUM_CLASSES],
                                 tf.constant_initializer(0.0))
         conv = tf.nn.conv3d(conv_bn_fc2, weights, strides=[1, 1, 1, 1, 1], padding='VALID')
@@ -165,7 +170,7 @@ def train(total_loss, global_step, decay_every_n_step=None):
         num_batches_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN / FLAGS.batch_size
         decay_every_n_step = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
 
-    lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE, global_step=global_step,
+    lr = tf.train.exponential_decay(FLAGS.init_lr, global_step=global_step,
                                     decay_steps=decay_every_n_step, decay_rate=LEARNING_RATE_DECAY_FACTOR)
     tf.summary.scalar('learning_rate', lr)
 

@@ -9,14 +9,15 @@ import tf_utils
 import numpy as np
 
 flags = tf.app.flags
-flags.DEFINE_string('file_path', '/Users/zijwei/Dev/datasets/cifar10-batch', 'directory to save training data[/Users/zijwei/Dev/datasets]')
+flags.DEFINE_string('file_path', '/Users/zijwei/Dev/datasets/UCF-101-g16/train', 'directory to save training data[/Users/zijwei/Dev/datasets]')
 flags.DEFINE_string("save_name", None, "Directory in which to save output of this run[Currentdate such as 2017-01...]")
-flags.DEFINE_integer('batch_size', 30, 'batch size[30]')
+flags.DEFINE_integer('batch_size', 12, 'batch size[12]')
 flags.DEFINE_boolean('rewrite', False, 'If rewrite training logs to save_name[False]')
-flags.DEFINE_integer('max_steps', 50000, 'Number of training steps[50000]')
+flags.DEFINE_integer('max_steps', 50000, 'Number of training steps[100000]')
 flags.DEFINE_integer('gpu_id', None, 'GPU ID [None]')
-flags.DEFINE_float('init_lr', 0.1, 'initial learning rate[0.1]')
-flags.DEFINE_float('weight_decay', 0.004, 'weight decay for fully connected layers [0.004]')
+flags.DEFINE_float('init_lr', 0.1, 'initial learning rate[0.05]')
+flags.DEFINE_float('weight_decay_conv', 0.0, 'weight decay for convolutional layers [0.0]')
+flags.DEFINE_float('weight_decay_fc', 0.004, 'weight decay for fully connected (fully convoluted) layers [0.004]')
 FLAGS = flags.FLAGS
 
 def main(argv=None):
