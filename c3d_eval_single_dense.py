@@ -1,7 +1,7 @@
 import tensorflow as tf
 import c3d_model_simple as c3d_model
-import tf_easy_dir
-import utils
+# import tf_easy_dir
+# import utils
 import tf_utils
 import c3d_input_ucf101_eval as c3d_inputs
 import os
