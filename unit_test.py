@@ -167,5 +167,13 @@ def main7():
         time.sleep(0.1)
         bar.update(i)
 
+
+def main8():
+    saver =tf.train.import_meta_graph('./models/c3d_ucf_model-99.meta')
+
+    graph = tf.get_default_graph().as_graph_def()
+
+    print 'Debug'
+
 if __name__ == '__main__':
-    main7()
+    main8()

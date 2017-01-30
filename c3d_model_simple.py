@@ -141,7 +141,7 @@ def correct_ones(logits, labels, k=1):
     correct_prediction = tf.cast(correct_prediction, tf.int32)
     # pred = tf.cast(tf.nn.in_top_k(logits, labels, k=1), tf.float32)
     n_corrects = tf.reduce_sum(correct_prediction,name='correct_n')
-    tf.summary.scalar('correct_ones', n_corrects)
+    # tf.summary.scalar('correct_ones', n_corrects)
     return n_corrects
 
 
