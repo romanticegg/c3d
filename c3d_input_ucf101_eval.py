@@ -70,7 +70,7 @@ def inputs(filepath):
     tf_image_seq = tf.transpose(tf_image_seq, [3, 0, 1, 2])
 
     tf_image_seq = tf.expand_dims(tf_image_seq, axis=0)
-
+    tf_image_lb = tf.expand_dims(tf_image_lb, axis=0)
     # update 2: eval just as the way we do in training:
     # fixme: not as good as update1
     # sample_start =tf.cond(tf_image_d > NUM_FRAMES_PER_CLIP,
