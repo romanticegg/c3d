@@ -83,17 +83,12 @@ def bn(x, isTraining=True, name=None, use_bias=False, moving_average_decay=0.999
                               moving_variance * moving_average_decay + variance * (1 - moving_average_decay))
         with tf.control_dependencies([train_mean, train_var]):
                 x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, bn_epsilon, name=name)
-    # else:
-    #
-    #     #update 1: default case: using the weighted train mean and var
-    #     # fixme: result is not good
-    #     x = tf.nn.batch_normalization(x, moving_mean, moving_variance, beta, gamma, bn_epsilon, name=name)
     else:
 
-        #update 2: ignoring the learned variance and so on, only using the learned beta and gamma
-        #fixme:
-        # mean, variance = tf.nn.moments(x, axis)
+        #update: after enough iterations, the error goes down to similar...
+        #fixme: find out if the reason is because dataset size and ...
         x = tf.nn.batch_normalization(x, moving_mean, moving_variance, beta, gamma, bn_epsilon, name=name)
+
     return x
 
 
