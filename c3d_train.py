@@ -10,7 +10,7 @@ import numpy as np
 import sys
 
 flags = tf.app.flags
-flags.DEFINE_string('file_path', '/Users/zijwei/Dev/datasets/UCF-101-g16/train', 'directory to save training data[/Users/zijwei/Dev/datasets]')
+flags.DEFINE_string('data_dir', '/Users/zijwei/Dev/datasets/UCF-101-g16/train', 'directory to save training data[/Users/zijwei/Dev/datasets]')
 flags.DEFINE_string("save_name", None, "Directory in which to save output of this run[Currentdate such as 2017-01...]")
 flags.DEFINE_integer('batch_size', 12, 'batch size[12]')
 flags.DEFINE_boolean('rewrite', False, 'If rewrite training logs to save_name[False]')
@@ -23,7 +23,7 @@ FLAGS = flags.FLAGS
 
 def main(argv=None):
 
-    if len(glob.glob(os.path.join(FLAGS.file_path, '*.{:s}'.format(input_reader.TF_FORMAT)))) < 1:
+    if len(glob.glob(os.path.join(FLAGS.data_dir, '*.{:s}'.format(input_reader.TF_FORMAT)))) < 1:
         print "Check file path"
         return
 
@@ -39,7 +39,7 @@ def main(argv=None):
 
     with tf.Graph().as_default() as graph:
         global_step =tf.get_variable(name='gstep', initializer=tf.constant(0), trainable=False)
-        batch_images, batch_labels, batch_filenames = input_reader.inputs(FLAGS.file_path, isTraining=True)
+        batch_images, batch_labels, batch_filenames = input_reader.inputs(FLAGS.data_dir, isTraining=True)
         print 'size of image input: [{:s}]'.format(', '.join(map(str, batch_images.get_shape().as_list())))
         print 'size of labels : [{:s}]'.format(', '.join(map(str, batch_labels.get_shape().as_list())))
         print '-'*32
