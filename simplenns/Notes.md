@@ -229,3 +229,12 @@ Refer to ResNet
 
 ## Print stuff immediately
 Add `sys.stdout.flush()` right after `print`
+
+## A New model
+
+Given an input `d*m*m*c` where d is the number of frames, m is the spatial resolution, c is the number of channels
+We learn a weight indicator  `k*k*k*1` to convolve with `d*m*m*c` to have  `d*m*m*1` weights. Based on the rankings of weights(using [nn.top-k](https://github.com/tensorflow/tensorflow/issues/288)), we are going to pick the top-k (if max-pooling, top-k will be half the original elements) using function[tf.gather?](https://github.com/tensorflow/tensorflow/issues/418), and resize them back into `d/2*m/2*m/2*c'` to fit for the pooling size.
+
+**Note** this should be based on fine-tuning, not sure if this is good for training from scratch.
+TODO:
+Implement this on CIFAR10 first, replace each max-pooling with the proposed method

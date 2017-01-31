@@ -17,6 +17,9 @@ flags.DEFINE_integer('batch_size', 1, 'batch size[1]')
 flags.DEFINE_integer('gpu_id', None, 'GPU ID [None]')
 tf.app.flags.DEFINE_boolean('use_fp16', False,
                             """Train the model using fp16[False].""")
+flags.DEFINE_float('init_lr', 0.1, 'initial learning rate[0.05]')
+flags.DEFINE_float('weight_decay_conv', 0.0, 'weight decay for convolutional layers [0.0]')
+flags.DEFINE_float('weight_decay_fc', 0.004, 'weight decay for fully connected (fully convoluted) layers [0.004]')
 FLAGS = flags.FLAGS
 
 
