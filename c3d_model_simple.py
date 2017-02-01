@@ -30,18 +30,10 @@ FLAGS = tf.app.flags.FLAGS
 # The UCF-101 dataset has 101 classes
 NUM_CLASSES = 101
 
-# Images are cropped to (CROP_SIZE, CROP_SIZE)
-CROP_SIZE = 128
-CHANNELS = 3
-NUM_FRAMES_PER_CLIP = 16
-#todo: check this number for UCF 101
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 8984
-NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 3498
-
 # Constants describing the training process.
 MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
-NUM_EPOCHS_PER_DECAY = 4.0      # Epochs after which learning rate decays.
-LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
+# NUM_EPOCHS_PER_DECAY = 4.0      # Epochs after which learning rate decays.
+# LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
 # INITIAL_LEARNING_RATE = 0.01       # Initial learning rate.
 
 
@@ -170,23 +162,23 @@ def loss(logits, labels, isFinalLossOnly=False):
         return tf.add_n(tf.get_collection('losses'), 'total_losses' )
 
 
-def train(total_loss, global_step, decay_every_n_step=None):
-    if not decay_every_n_step:
-        num_batches_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN / FLAGS.batch_size
-        decay_every_n_step = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
+def train(total_loss, global_step, decay_every_n_step):
+    # if not decay_every_n_step:
+    #     num_batches_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN / FLAGS.batch_size
+    #     decay_every_n_step = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
 
     lr = tf.train.exponential_decay(FLAGS.init_lr, global_step=global_step,
-                                    decay_steps=decay_every_n_step, decay_rate=LEARNING_RATE_DECAY_FACTOR)
+                                    decay_steps=decay_every_n_step, decay_rate=FLAGS.lr_decay_rate)
     tf.summary.scalar('learning_rate', lr)
 
     loss_averages = tf.train.ExponentialMovingAverage(decay=0.9)
     loss_list = tf.get_collection('losses')+[total_loss]  # a set of l2 loss, final entropy loss and the sum of all
     loss_averages_op = loss_averages.apply(loss_list)
 
-    #todo: adding all the losses to summary:
-    for s_loss in loss_list:
-         tf.summary.scalar('{:s}(raw)'.format(s_loss.op.name), s_loss)
-         tf.summary.scalar('{:s}(mv)'.format(s_loss.op.name), loss_averages.average(s_loss))
+    # #todo: adding all the losses to summary:
+    # for s_loss in loss_list:
+    #      tf.summary.scalar('{:s}(raw)'.format(s_loss.op.name), s_loss)
+    #      tf.summary.scalar('{:s}(mv)'.format(s_loss.op.name), loss_averages.average(s_loss))
 
     with tf.control_dependencies([loss_averages_op]): # note this should be a list even if it is only one element
         opt =tf.train.GradientDescentOptimizer(learning_rate=lr)
@@ -201,4 +193,4 @@ def train(total_loss, global_step, decay_every_n_step=None):
     with tf.control_dependencies([apply_gradient_op, variable_average_op]):
         train_op=tf.no_op('train')
 
-    return train_op
+    return train_op, lr

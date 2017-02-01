@@ -15,7 +15,6 @@ class tf_easy_dir:
         self.image_save_dir = utils.get_dir(os.path.join(self.save_dir, 'images'))
         self.log_save_dir = utils.get_dir(os.path.join(self.save_dir, 'logs'))
 
-
     def clear_save_name(self):
         """
         Clears all saved content for SAVE_NAME.

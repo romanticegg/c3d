@@ -91,8 +91,6 @@ def inputs(filepath, isTraining=True):
 
     tf_image_seq = tf.image.resize_images(tf_image_seq, [CROP_SIZE, CROP_SIZE])
 
-
-
     # randome image operation:
     tf_image_seq = tf.image.random_flip_left_right(tf_image_seq)
     # fixme: should we also subtract mean?
@@ -103,19 +101,17 @@ def inputs(filepath, isTraining=True):
     tf_image_seq = tf.transpose(tf_image_seq, [3, 0, 1, 2])
 
     min_queue_examples = 32
-    # fixme: change to 1 for debugging!!
-    # todo: change back!
     num_preprocess_thread = 16
 
     if isTraining:
         batch_images, batch_labels, batch_filenames = tf.train.shuffle_batch([tf_image_seq, tf_image_lb, tf_filename], batch_size=FLAGS.batch_size,
                                                             num_threads=num_preprocess_thread, enqueue_many=False,
                                                             capacity=min_queue_examples + 3 * 10,
-                                                            min_after_dequeue=min_queue_examples)
+                                                            min_after_dequeue=min_queue_examples, allow_smaller_final_batch=False)
     else:
         batch_images, batch_labels, batch_filenames = tf.train.batch([tf_image_seq, tf_image_lb, tf_filename], batch_size=FLAGS.batch_size,
                                                     num_threads=num_preprocess_thread, enqueue_many=False,
-                                                    capacity=min_queue_examples + 3 * FLAGS.batch_size)
+                                                    capacity=min_queue_examples + 3 * FLAGS.batch_size, allow_smaller_final_batch=False)
 
     return batch_images, batch_labels, batch_filenames
 
