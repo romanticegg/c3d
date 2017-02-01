@@ -22,7 +22,6 @@ forward to make predictions.
 
 import tensorflow as tf
 from tf_utils import variable_on_cpu, variable_with_weight_decay, bn, print_tensor_shape
-import math
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -47,7 +46,8 @@ MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
 def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('conv1') as scope:
-        k1 = variable_with_weight_decay('w', shape=[3, 3, 3, 3, 64], initializer=tf.contrib.layers.xavier_initializer(), wd=FLAGS.weight_decay_conv)
+        k1 = variable_with_weight_decay('w', shape=[3, 3, 3, 3, 64], initializer=tf.contrib.layers.xavier_initializer(),
+                                        wd=FLAGS.weight_decay_conv)
         conv1 = tf.nn.conv3d(inputs, k1, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv1')
         conv_bn1 = bn(conv1, isTraining=isTraining)
         conv_bn1 = tf.nn.relu(conv_bn1)
@@ -108,7 +108,7 @@ def inference_c3d(inputs, isTraining=True):
         print_tensor_shape(conv_bn_fc1)
 
     if isTraining:
-        conv_bn_fc1 = tf.nn.dropout(conv_bn_fc1, 0.9)
+        conv_bn_fc1 = tf.nn.dropout(conv_bn_fc1, FLAGS.dropout)
 
     with tf.variable_scope('fc2') as scope:
         kfc2 = variable_with_weight_decay('w', shape=[1, 1, 1, 2048, 2048],
@@ -118,7 +118,7 @@ def inference_c3d(inputs, isTraining=True):
         print_tensor_shape(conv_bn_fc2)
 
     if isTraining:
-        conv_bn_fc2 = tf.nn.dropout(conv_bn_fc2, 0.9)
+        conv_bn_fc2 = tf.nn.dropout(conv_bn_fc2, FLAGS.dropout)
 
     with tf.variable_scope('classification') as scope:
         weights = variable_with_weight_decay('w', [1, 1, 1, 2048, NUM_CLASSES],
@@ -175,7 +175,7 @@ def train(total_loss, global_step, decay_every_n_step):
     loss_list = tf.get_collection('losses')+[total_loss]  # a set of l2 loss, final entropy loss and the sum of all
     loss_averages_op = loss_averages.apply(loss_list)
 
-    # #todo: adding all the losses to summary:
+    # todo: adding all the losses to summary:
     # for s_loss in loss_list:
     #      tf.summary.scalar('{:s}(raw)'.format(s_loss.op.name), s_loss)
     #      tf.summary.scalar('{:s}(mv)'.format(s_loss.op.name), loss_averages.average(s_loss))
@@ -185,12 +185,12 @@ def train(total_loss, global_step, decay_every_n_step):
         #todo: check the grads [grad, var]
         grads = opt.compute_gradients(total_loss)
 
-    #note this is only an op without any output
+    # note this is only an op without any output
     apply_gradient_op = opt.apply_gradients(grads, global_step=global_step)
 
     variable_average = tf.train.ExponentialMovingAverage(decay=MOVING_AVERAGE_DECAY, num_updates=global_step)
     variable_average_op = variable_average.apply(tf.trainable_variables())
     with tf.control_dependencies([apply_gradient_op, variable_average_op]):
-        train_op=tf.no_op('train')
+        train_op = tf.no_op('train')
 
     return train_op, lr

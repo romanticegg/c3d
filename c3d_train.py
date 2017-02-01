@@ -35,6 +35,9 @@ def main(argv=None):
         return
 
     steps_per_epoch = int(math.ceil(NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN*1.0/FLAGS.batch_size))
+    print 'Each epoch consists {:d} Steps'.format(steps_per_epoch)
+    sys.stdout.flush()
+
     lr_decay_every_n_step = int(steps_per_epoch * FLAGS.num_epoch_per_decay)
 
     if not FLAGS.save_name:
@@ -48,17 +51,15 @@ def main(argv=None):
         save_locations.clear_save_name()
 
     with tf.Graph().as_default() as graph:
-        global_step =tf.get_variable(name='gstep', initializer=tf.constant(0), trainable=False)
+        global_step = tf.get_variable(name='gstep', initializer=tf.constant(0), trainable=False)
         batch_images, batch_labels, batch_filenames = input_reader.inputs(FLAGS.data_dir, isTraining=True)
         print 'size of image input: [{:s}]'.format(', '.join(map(str, batch_images.get_shape().as_list())))
         print 'size of labels : [{:s}]'.format(', '.join(map(str, batch_labels.get_shape().as_list())))
         print '-'*32
         sys.stdout.flush()
 
-
-
         logits = c3d_model.inference_c3d(batch_images, isTraining=True)
-        loss =c3d_model.loss(logits=logits, labels=batch_labels)
+        loss = c3d_model.loss(logits=logits, labels=batch_labels)
 
         train_op, lr = c3d_model.train(loss, global_step, lr_decay_every_n_step)
 
@@ -75,6 +76,7 @@ def main(argv=None):
             coord = tf.train.Coordinator()
 
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+
             cum_loss = 0
             cum_correct = 0
 
