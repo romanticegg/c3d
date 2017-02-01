@@ -10,6 +10,7 @@ NEW_HEIGHT = 150
 NEW_WIDTH = 200
 
 CROP_SIZE = 128
+RANDOM_CROP_RATIO = [1.0, 0.875, 0.75, 1.0/3]
 NUM_FRAMES_PER_CLIP = 16
 
 # NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 9537
@@ -74,8 +75,22 @@ def inputs(filepath, isTraining=True):
     tf_image_seq = tf.transpose(tf_image_seq, [1, 2, 3, 0])
     # [h, w, c, d] --> [h, w, c*d]
     tf_image_seq= tf.reshape(tf_image_seq, [NEW_HEIGHT, NEW_WIDTH, NUM_FRAMES_PER_CLIP*3])
-    # image crop:
-    tf_image_seq = tf.image.resize_image_with_crop_or_pad(tf_image_seq, CROP_SIZE, CROP_SIZE)
+    # update 1: only normal cropping:
+    # tf_image_seq = tf.image.resize_image_with_crop_or_pad(tf_image_seq, CROP_SIZE, CROP_SIZE)
+
+    # update 2: random cropping: randomly crop a small region and resize to CROP_SIZE
+    # here NEW_HEIGHT is larger than
+    # https://arxiv.org/pdf/1507.02159v1.pdf
+    # https://arxiv.org/pdf/1604.04494v1.pdf
+    tf_w_size = tf.cast(NEW_HEIGHT * RANDOM_CROP_RATIO[tf.random_uniform([], minval=0, maxval=4, dtype=tf.int32)], tf.int32)
+
+    tf_h_size = tf.cast(NEW_HEIGHT * RANDOM_CROP_RATIO[tf.random_uniform([], minval=0, maxval=4, dtype=tf.int32)], tf.int32)
+
+    tf_image_seq = tf.image.resize_image_with_crop_or_pad(tf_image_seq, tf_h_size, tf_w_size)
+
+    tf_image_seq = tf.image.resize_images(tf_image_seq, CROP_SIZE, CROP_SIZE)
+
+
 
     # randome image operation:
     tf_image_seq = tf.image.random_flip_left_right(tf_image_seq)

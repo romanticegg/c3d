@@ -115,6 +115,9 @@ def inference_c3d(inputs, isTraining=True):
         conv_bn_fc1 = bn(conv_fc1, isTraining=isTraining)
         print_tensor_shape(conv_bn_fc1)
 
+    if isTraining:
+        conv_bn_fc1 = tf.nn.dropout(conv_bn_fc1, 0.9)
+
     with tf.variable_scope('fc2') as scope:
         kfc2 = variable_with_weight_decay('w', shape=[1, 1, 1, 2048, 2048],
                                         initializer=tf.contrib.layers.variance_scaling_initializer(), wd=FLAGS.weight_decay_fc)
@@ -122,6 +125,8 @@ def inference_c3d(inputs, isTraining=True):
         conv_bn_fc2 = bn(conv_fc2, isTraining=isTraining)
         print_tensor_shape(conv_bn_fc2)
 
+    if isTraining:
+        conv_bn_fc2 = tf.nn.dropout(conv_bn_fc2, 0.9)
 
     with tf.variable_scope('classification') as scope:
         weights = variable_with_weight_decay('w', [1, 1, 1, 2048, NUM_CLASSES],

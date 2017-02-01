@@ -238,3 +238,16 @@ We learn a weight indicator  `k*k*k*1` to convolve with `d*m*m*c` to have  `d*m*
 **Note** this should be based on fine-tuning, not sure if this is good for training from scratch.
 TODO:
 Implement this on CIFAR10 first, replace each max-pooling with the proposed method
+
+## Dropout vs. Batch Normalization
+
+>Dropout is mostly a technique for regularization. It introduces noise into a neural network to force the neural network to learn to generalize well enough to deal with noise. (This is a big oversimplification, and dropout is really about a lot more than just robustness to noise)
+
+>Batch normalization is mostly a technique for improving optimization.
+
+>As a side effect, batch normalization happens to introduce some noise into the network, so it can regularize the model a little bit.
+
+>When you have a large dataset, it’s important to optimize well, and not as important to regularize well, so batch normalization is more important for large datasets. You can of course use both batch normalization and dropout at the same time—-I do this for some of my GANs in this paper: [1606.03498] Improved Techniques for Training GANs
+
+
+The research indicates that when removing Dropout while using Batch Normalization, the effect is much faster learning without a loss in generalization. The research appears to be have been done in **Google's inception architecture**
