@@ -77,6 +77,9 @@ def main(argv=None):
 
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
+            print 'Training Start!'
+            sys.stdout.flush()
+
             cum_loss = 0
             cum_correct = 0
 
@@ -88,15 +91,17 @@ def main(argv=None):
                 cum_loss += loss_
                 cum_correct += correct_ones_
                 # update: print loss every epoch
-                if i % steps_per_epoch ==0:
+                if (i+1) % steps_per_epoch == 0:
                     lr_ = sess.run(lr)
+
+
                     print '[{:s} -- {:08d}|{:08d}]\tloss : {:.3f}\t, correct ones [{:d}|{:d}], l-rate:{:.06f}'.format(save_dir, i, FLAGS.max_steps,
                                                                                           cum_loss/steps_per_epoch, cum_correct, NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN, lr_)
                     sys.stdout.flush()
                     cum_loss = 0
                     cum_correct = 0
 
-                if (i+1 % 100) ==0:
+                if (i+1 % 100) == 0:
                     summary_ = sess.run(summary_op)
                     summary_writer.add_summary(summary_, global_step=global_step)
 
