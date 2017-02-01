@@ -10,7 +10,6 @@ NEW_HEIGHT = 150
 NEW_WIDTH = 200
 
 CROP_SIZE = 128
-RANDOM_CROP_RATIO = [1.0, 0.875, 0.75, 1.0/3]
 NUM_FRAMES_PER_CLIP = 16
 
 # NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 9537
@@ -82,6 +81,8 @@ def inputs(filepath, isTraining=True):
     # here NEW_HEIGHT is larger than
     # https://arxiv.org/pdf/1507.02159v1.pdf
     # https://arxiv.org/pdf/1604.04494v1.pdf
+    RANDOM_CROP_RATIO = tf.constant([1.0, 0.875, 0.75, 1.0 / 3], dtype=tf.float32)
+
     tf_w_size = tf.cast(NEW_HEIGHT * RANDOM_CROP_RATIO[tf.random_uniform([], minval=0, maxval=4, dtype=tf.int32)], tf.int32)
 
     tf_h_size = tf.cast(NEW_HEIGHT * RANDOM_CROP_RATIO[tf.random_uniform([], minval=0, maxval=4, dtype=tf.int32)], tf.int32)
