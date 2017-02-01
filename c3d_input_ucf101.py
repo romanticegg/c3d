@@ -89,7 +89,7 @@ def inputs(filepath, isTraining=True):
 
     tf_image_seq = tf.image.resize_image_with_crop_or_pad(tf_image_seq, tf_h_size, tf_w_size)
 
-    tf_image_seq = tf.image.resize_images(tf_image_seq, CROP_SIZE, CROP_SIZE)
+    tf_image_seq = tf.image.resize_images(tf_image_seq, [CROP_SIZE, CROP_SIZE])
 
 
 
