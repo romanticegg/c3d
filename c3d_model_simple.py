@@ -55,7 +55,7 @@ LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
 def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('conv1') as scope:
-        k1 = variable_with_weight_decay('w', shape=[3, 3, 3, 3, 64], initializer=tf.contrib.layers.variance_scaling_initializer(), wd=FLAGS.weight_decay_conv)
+        k1 = variable_with_weight_decay('w', shape=[3, 3, 3, 3, 64], initializer=tf.contrib.layers.xavier_initializer(), wd=FLAGS.weight_decay_conv)
         conv1 = tf.nn.conv3d(inputs, k1, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv1')
         conv_bn1 = bn(conv1, isTraining=isTraining)
         conv_bn1 = tf.nn.relu(conv_bn1)
@@ -66,7 +66,7 @@ def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('conv2') as scope:
         k2 = variable_with_weight_decay('w', shape=[3, 3, 3, 64, 128],
-                                        initializer=tf.contrib.layers.variance_scaling_initializer(), wd=FLAGS.weight_decay_conv)
+                                        initializer=tf.contrib.layers.xavier_initializer(), wd=FLAGS.weight_decay_conv)
         conv2 = tf.nn.conv3d(pool1, k2, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv2')
         conv_bn2 = bn(conv2, isTraining=isTraining)
         conv_bn2 = tf.nn.relu(conv_bn2)
@@ -77,7 +77,7 @@ def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('conv3') as scope:
         k3 = variable_with_weight_decay('w', shape=[3, 3, 3, 128, 256],
-                                        initializer=tf.contrib.layers.variance_scaling_initializer(), wd=FLAGS.weight_decay_conv)
+                                        initializer=tf.contrib.layers.xavier_initializer(), wd=FLAGS.weight_decay_conv)
         conv3 = tf.nn.conv3d(pool2, k3, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv3')
         conv_bn3 = bn(conv3, isTraining=isTraining)
         conv_bn3 = tf.nn.relu(conv_bn3)
@@ -88,7 +88,7 @@ def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('conv4') as scope:
         k4 = variable_with_weight_decay('w', shape=[3, 3, 3, 256, 256],
-                                        initializer=tf.contrib.layers.variance_scaling_initializer(), wd=FLAGS.weight_decay_conv)
+                                        initializer=tf.contrib.layers.xavier_initializer(), wd=FLAGS.weight_decay_conv)
         conv4 = tf.nn.conv3d(pool3, k4, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv4')
         conv_bn4 = bn(conv4, isTraining=isTraining)
         conv_bn4 =tf.nn.relu(conv_bn4)
@@ -99,7 +99,7 @@ def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('conv5') as scope:
         k5 = variable_with_weight_decay('w', shape=[3, 3, 3, 256, 256],
-                                        initializer=tf.contrib.layers.variance_scaling_initializer(), wd=FLAGS.weight_decay_conv)
+                                        initializer=tf.contrib.layers.xavier_initializer(), wd=FLAGS.weight_decay_conv)
         conv5 = tf.nn.conv3d(pool4, k5, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv5')
         conv_bn5 = bn(conv5, isTraining=isTraining)
         conv_bn5 = tf.nn.relu(conv_bn5)
@@ -110,7 +110,7 @@ def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('fc1') as scope:
         kfc1 = variable_with_weight_decay('w', shape=[1, 4, 4, 256, 2048],
-                                        initializer=tf.contrib.layers.variance_scaling_initializer(), wd=FLAGS.weight_decay_fc)
+                                        initializer=tf.contrib.layers.xavier_initializer(), wd=FLAGS.weight_decay_fc)
         conv_fc1 = tf.nn.conv3d(pool5, kfc1, strides=[1, 1, 1, 1, 1], padding='VALID', name='fc1')
         conv_bn_fc1 = bn(conv_fc1, isTraining=isTraining)
         print_tensor_shape(conv_bn_fc1)
@@ -120,7 +120,7 @@ def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('fc2') as scope:
         kfc2 = variable_with_weight_decay('w', shape=[1, 1, 1, 2048, 2048],
-                                        initializer=tf.contrib.layers.variance_scaling_initializer(), wd=FLAGS.weight_decay_fc)
+                                        initializer=tf.contrib.layers.xavier_initializer(), wd=FLAGS.weight_decay_fc)
         conv_fc2 = tf.nn.conv3d(conv_bn_fc1, kfc2, strides=[1, 1, 1, 1, 1], padding='VALID', name='fc2')
         conv_bn_fc2 = bn(conv_fc2, isTraining=isTraining)
         print_tensor_shape(conv_bn_fc2)
@@ -130,7 +130,7 @@ def inference_c3d(inputs, isTraining=True):
 
     with tf.variable_scope('classification') as scope:
         weights = variable_with_weight_decay('w', [1, 1, 1, 2048, NUM_CLASSES],
-                                             initializer=tf.contrib.layers.variance_scaling_initializer(), wd=FLAGS.weight_decay_fc)
+                                             initializer=tf.contrib.layers.xavier_initializer(), wd=FLAGS.weight_decay_fc)
         biases = variable_on_cpu('b', [NUM_CLASSES],
                                 tf.constant_initializer(0.0))
         conv = tf.nn.conv3d(conv_bn_fc2, weights, strides=[1, 1, 1, 1, 1], padding='VALID')
