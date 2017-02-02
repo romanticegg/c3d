@@ -18,18 +18,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
-# from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
-# import PIL.Image as Image
-from scipy.ndimage  import imread
-import random
-import numpy as np
-import cv2
-# from scipy.misc import imresize  # avoid this one due to uncertainties
-# import time
 import glob
-import consts as c
+import os
+import random
+
+import cv2
+import numpy as np
+from scipy.ndimage  import imread
+
+from old import consts as c
+
 home_dir = os.path.expanduser('~')
 
 random.seed(0)

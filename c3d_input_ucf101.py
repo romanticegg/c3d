@@ -91,6 +91,8 @@ def inputs(filepath, isTraining=True):
 
     tf_image_seq = tf.image.resize_images(tf_image_seq, [CROP_SIZE, CROP_SIZE])
 
+
+    # ----- End of update
     # randome image operation:
     tf_image_seq = tf.image.random_flip_left_right(tf_image_seq)
     # fixme: should we also subtract mean?

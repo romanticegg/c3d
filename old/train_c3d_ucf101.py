@@ -16,15 +16,16 @@
 """Trains and Evaluates the MNIST network using a feed dictionary."""
 # pylint: disable=missing-docstring
 import os
-import time
-import numpy as np
 import random
+import time
+
+import numpy as np
 import tensorflow as tf
 
-import input_data
-import c3d_model
 import consts as c
+import input_data
 import utils
+from old import c3d_model
 
 # Basic model parameters as external flags.
 flags = tf.app.flags
@@ -306,7 +307,7 @@ def run_training():
         test_writer = tf.summary.FileWriter('./visual_logs/test', sess.graph)
 
         train_idxs, train_filenames, train_labels = input_data.get_list_of_filesnlabels('list/train.list')
-        test_idxs, test_filenames, test_labels =input_data.get_list_of_filesnlabels('list/test.list')
+        test_idxs, test_filenames, test_labels = input_data.get_list_of_filesnlabels('list/test.list')
         np_mean = np.load('./models/crop_mean.npy').reshape([c3d_model.NUM_FRAMES_PER_CLIP, c3d_model.CROP_SIZE, c3d_model.CROP_SIZE, 3])
 
         random.seed(FLAGS.randomseed)

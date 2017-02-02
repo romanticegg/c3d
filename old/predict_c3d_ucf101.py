@@ -19,13 +19,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os.path
 import time
-from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
-import input_data
-import c3d_model
+
 import numpy as np
+import tensorflow as tf
+from six.moves import xrange  # pylint: disable=redefined-builtin
+
+from old import c3d_model
 
 # Basic model parameters as external flags.
 flags = tf.app.flags
@@ -107,7 +107,7 @@ def run_test():
   logits = []
   for gpu_index in range(0, gpu_num):
     with tf.device('/gpu:%d' % gpu_index):
-      logit = c3d_model.inference_c3d(images_placeholder[gpu_index * FLAGS.batch_size:(gpu_index + 1) * FLAGS.batch_size,:,:,:,:], 0.6, FLAGS.batch_size, weights, biases)
+      logit = c3d_model.inference_c3d(images_placeholder[gpu_index * FLAGS.batch_size:(gpu_index + 1) * FLAGS.batch_size, :, :, :, :], 0.6, FLAGS.batch_size, weights, biases)
       logits.append(logit)
   logits = tf.concat(0, logits)
   norm_score = tf.nn.softmax(logits)

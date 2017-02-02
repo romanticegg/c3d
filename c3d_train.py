@@ -21,7 +21,7 @@ flags.DEFINE_float('init_lr', 0.05, 'initial learning rate[0.05]')
 flags.DEFINE_float('lr_decay_rate', 0.5, 'Decay learning rate by [0.5]')
 flags.DEFINE_integer('num_epoch_per_decay', 4, 'decay of learning rate every [4] epoches')
 flags.DEFINE_float('weight_decay_conv', 0.0005, 'weight decay for convolutional layers [0.0005]')
-flags.DEFINE_float('weight_decay_fc', 0.0005, 'weight decay for fully connected (fully convoluted) layers [0.004]')
+flags.DEFINE_float('weight_decay_fc', 0.0005, 'weight decay for fully connected (fully convoluted) layers [0.0005]')
 flags.DEFINE_float('dropout', 0.5, 'dropuout ratio[0.5]')
 
 FLAGS = flags.FLAGS
@@ -93,7 +93,6 @@ def main(argv=None):
                 # update: print loss every epoch
                 if (i+1) % steps_per_epoch == 0:
                     lr_ = sess.run(lr)
-
 
                     print '[{:s} -- {:08d}|{:08d}]\tloss : {:.3f}\t, correct ones [{:d}|{:d}], l-rate:{:.06f}'.format(save_dir, i, FLAGS.max_steps,
                                                                                           cum_loss/steps_per_epoch, cum_correct, NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN, lr_)
