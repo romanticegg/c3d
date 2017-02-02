@@ -29,6 +29,20 @@ FLAGS = flags.FLAGS
 
 def main(argv=None):
 
+    # print flags
+
+    print '*'*20 + 'Hyper Parameters' + '*'*20
+    print 'batch_size:\t{:d}'.format(FLAGS.batch_size)
+    print 'max_steps:\t{:d}'.format(FLAGS.max_steps)
+    print 'init_lr:\t{.6f}'.format(FLAGS.init_lr)
+    print 'lr_decay_rate:\t{.6f}'.format(FLAGS.lr_decay_rate)
+    print 'num_epoch_per_decay:\t{.6f}'.format(FLAGS.num_epoch_per_decay)
+    print 'weight_decay_conv:\t{.6f}'.format(FLAGS.weight_decay_conv)
+    print 'weight_decay_fc:\t{.6f}'.format(FLAGS.weight_decay_fc)
+    print 'dropout:\t{.6f}'.format(FLAGS.dropout)
+
+    print '*'*40
+
     NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = len(glob.glob(os.path.join(FLAGS.data_dir, '*.{:s}'.format(input_reader.TF_FORMAT))))
     if NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN < 1:
         print "Check file path"
