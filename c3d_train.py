@@ -34,12 +34,12 @@ def main(argv=None):
     print '*'*20 + 'Hyper Parameters' + '*'*20
     print 'batch_size:\t{:d}'.format(FLAGS.batch_size)
     print 'max_steps:\t{:d}'.format(FLAGS.max_steps)
-    print 'init_lr:\t{.6f}'.format(FLAGS.init_lr)
-    print 'lr_decay_rate:\t{.6f}'.format(FLAGS.lr_decay_rate)
-    print 'num_epoch_per_decay:\t{.6f}'.format(FLAGS.num_epoch_per_decay)
-    print 'weight_decay_conv:\t{.6f}'.format(FLAGS.weight_decay_conv)
-    print 'weight_decay_fc:\t{.6f}'.format(FLAGS.weight_decay_fc)
-    print 'dropout:\t{.6f}'.format(FLAGS.dropout)
+    print 'init_lr:\t{:.6f}'.format(FLAGS.init_lr)
+    print 'lr_decay_rate:\t{:.6f}'.format(FLAGS.lr_decay_rate)
+    print 'num_epoch_per_decay:\t{:.6f}'.format(FLAGS.num_epoch_per_decay)
+    print 'weight_decay_conv:\t{:.6f}'.format(FLAGS.weight_decay_conv)
+    print 'weight_decay_fc:\t{:.6f}'.format(FLAGS.weight_decay_fc)
+    print 'dropout:\t{:.6f}'.format(FLAGS.dropout)
 
     print '*'*40
 
