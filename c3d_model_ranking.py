@@ -42,6 +42,59 @@ MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
 #strides:A list of ints that has length >= 5. 1-D tensor of length 5. The stride
 # of the sliding window for each dimension of input. Must have strides[0] = strides[4] = 1
 
+def region_ranking_3d(tf_input, weight_shape, strides, batch_size=None):
+    """RegionRanking layer works similar to max-pooling
+
+    Args:
+        tf_input [batch_size, d, h, w, c]
+        weight_shape [d, h, w, c, 1]  convolve with input to create weights for each component
+        strids [h, w, c] shrink factor on each of the dimensions
+        batch_size
+
+    Returns:
+        Output of the layer
+
+    Rrainable variables:
+        tf_ranking_w
+    """
+    # if not strides:
+    # strides=[2, 2, 2]  # stride on depth, height, width
+
+    # b_size, d, h, w, c = tf.shape(tf_input, tf.int32)
+    batch_size = batch_size or FLAGS.batch_size
+    shrink_factor = reduce(lambda x, y: x * y, strides)
+    tf_input_shape = tf.shape(tf_input, out_type=tf.int32)
+
+    tf_ranking_w = variable_with_weight_decay('w',
+                                              shape=weight_shape,
+                                              initializer=tf.contrib.layers.xavier_initializer(),
+                                              wd=None)
+
+    tf_weights = tf.nn.conv3d(tf_input, tf_ranking_w, strides=[1, 1, 1, 1, 1], padding='SAME')
+
+    tf_input_line = tf.reshape(tf_input,
+                               tf.pack([tf_input_shape[0], -1, tf_input_shape[-1]]))  # keep the batch_size and channels
+    # fixme: it has to be in batch_size dimension because we want a sort in this table
+    tf_weights_line = tf.reshape(tf_weights, tf.pack([tf_input_shape[0], -1]))
+
+    # sorted=False enables that their spatial relationships will be roughly kept
+    _, tf_indices = tf.nn.top_k(tf_weights_line, k=tf.cast(tf.shape(tf_weights_line)[-1] / shrink_factor, tf.int32),
+                                sorted=False)
+
+    tf_indices_line = tf.reshape(tf_indices, [-1])  # shape [batch_size, top_k_indices]
+    tf_indices_helper = tf.expand_dims(tf.range(batch_size), 1)  # should be batch size
+    tf_indices_helper = tf.tile(tf_indices_helper, multiples=tf.pack([1, tf.shape(tf_indices)[1]]))
+    tf_indices_helper = tf.reshape(tf_indices_helper, [-1])
+
+    tf_indices_2d = tf.stack([tf_indices_helper, tf_indices_line], axis=1)
+
+    tf_input_shrinked = tf.gather_nd(tf_input_line, indices=tf_indices_2d)
+    tf_output = tf.reshape(tf_input_shrinked,
+                           tf.pack([tf_input_shape[0], tf_input_shape[1] / strides[0], tf_input_shape[2] / strides[1],
+                                    tf_input_shape[3] / strides[2], tf_input_shape[4]]))
+    return tf_output
+
+
 
 def inference_c3d(inputs, isTraining=True):
 
@@ -53,21 +106,8 @@ def inference_c3d(inputs, isTraining=True):
         conv_bn1 = tf.nn.relu(conv_bn1)
         print_tensor_shape(conv_bn1)
 
-        k1_w = variable_with_weight_decay('w', shape=[3, 3, 3, 3, 1], initializer=tf.contrib.layers.xavier_initializer(),
-                                        wd=FLAGS.weight_decay_conv)
-        conv1_w = tf.nn.conv3d(inputs, k1_w, strides=[1, 1, 1, 1, 1], padding='SAME', name='conv1')
-
-
-        # flatten:
-        b_size, d, h, w, c = tf.shape_n(conv_bn1, tf.int32)
-        conv_bn1 = tf.reshape(conv_bn1, tf.pack([b_size, -1, c]))
-        conv1_w = tf.reshape(conv1_w, tf.pack([b_size, -1]))
-        _, dw = tf.shape_n(conv1_w)
-        _, indices = tf.nn.top_k(conv1_w, k=tf.cast( dw / 4, tf.int32))  # divided by 4
-        # fixme: check if there are problems here!
-        conv_bn1 = tf.gather_nd(conv_bn1, indices=indices)
-        pool1 = tf.reshape(conv_bn1, tf.pack([b_size, d, h/2, w/2, c]))
-
+    with tf.variable_scope('pool1') as scope:
+        pool1 = region_ranking_3d(conv_bn1, [3, 3, 3, 64, 1], [1, 2, 2])
         print_tensor_shape(pool1)
 
 
@@ -79,8 +119,9 @@ def inference_c3d(inputs, isTraining=True):
         conv_bn2 = tf.nn.relu(conv_bn2)
         print_tensor_shape(conv_bn2)
 
-    pool2 = tf.nn.max_pool3d(conv_bn2, ksize=[1, 2, 2, 2, 1], strides=[1, 2, 2, 2, 1], padding='SAME', name='pool2')
-    print_tensor_shape(pool2)
+    with tf.variable_scope('pool2') as scope:
+        pool2 = region_ranking_3d(conv_bn2, [3, 3, 3, 128, 1], strides=[2, 2, 2])
+        print_tensor_shape(pool2)
 
     with tf.variable_scope('conv3') as scope:
         k3 = variable_with_weight_decay('w', shape=[3, 3, 3, 128, 256],
@@ -90,8 +131,9 @@ def inference_c3d(inputs, isTraining=True):
         conv_bn3 = tf.nn.relu(conv_bn3)
         print_tensor_shape(conv_bn3)
 
-    pool3 = tf.nn.max_pool3d(conv_bn3, ksize=[1, 2, 2, 2, 1], strides=[1, 2, 2, 2, 1], padding='SAME', name='pool3')
-    print_tensor_shape(pool3)
+    with tf.variable_scope('pool3') as scope:
+        pool3 = region_ranking_3d(conv_bn3, [3, 3, 3, 256, 1], strides=[2, 2, 2])
+        print_tensor_shape(pool3)
 
     with tf.variable_scope('conv4') as scope:
         k4 = variable_with_weight_decay('w', shape=[3, 3, 3, 256, 256],
@@ -101,8 +143,9 @@ def inference_c3d(inputs, isTraining=True):
         conv_bn4 =tf.nn.relu(conv_bn4)
         print_tensor_shape(conv_bn4)
 
-    pool4 = tf.nn.max_pool3d(conv_bn4, ksize=[1, 2, 2, 2, 1], strides=[1, 2, 2, 2, 1], padding='SAME', name='pool4')
-    print_tensor_shape(pool4)
+    with tf.variable_scope('pool4') as scope:
+        pool4 = region_ranking_3d(conv_bn4, [3, 3, 3, 256, 1], strides=[2, 2, 2])
+        print_tensor_shape(pool4)
 
     with tf.variable_scope('conv5') as scope:
         k5 = variable_with_weight_decay('w', shape=[3, 3, 3, 256, 256],
@@ -112,8 +155,9 @@ def inference_c3d(inputs, isTraining=True):
         conv_bn5 = tf.nn.relu(conv_bn5)
         print_tensor_shape(conv_bn5)
 
-    pool5 = tf.nn.max_pool3d(conv_bn5, ksize=[1, 2, 2, 2, 1], strides=[1, 2, 2, 2, 1], padding='SAME', name='pool5')
-    print_tensor_shape(pool5)
+    with tf.variable_scope('pool5') as scope:
+        pool5 = region_ranking_3d(conv_bn5, [3, 3, 3, 256, 1], strides=[2, 2, 2])
+        print_tensor_shape(pool5)
 
     with tf.variable_scope('fc1') as scope:
         kfc1 = variable_with_weight_decay('w', shape=[1, 4, 4, 256, 2048],
