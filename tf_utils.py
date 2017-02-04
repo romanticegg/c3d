@@ -141,3 +141,18 @@ def print_layer_info(layername, kernel=None, stride=None, reslt=None):
         print 'Result size [{:s}]'.format(', '.join(map(str, reslt)))
     print '-' * 32
     sys.stdout.flush()
+
+
+def print_gflags(FLAGS=None):
+    """Print the content of tf.app.flags.FLAGS
+
+    :param FLAGS:
+    :return:None
+    """
+    FLAGS = FLAGS or tf.app.flags.FLAGS
+    print '*'*20 + 'Parameter settings' + '*'*20
+    for name, value in FLAGS.__flags.iteritems():
+        print ' ', name, ':\t', value
+    print '*'*40
+
+    sys.stdout.flush()

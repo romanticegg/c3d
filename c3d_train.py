@@ -1,5 +1,5 @@
 import tensorflow as tf
-import c3d_model_ranking_fix as c3d_model
+import c3d_model_ranking_fix_upper as c3d_model
 import c3d_input_ucf101 as input_reader
 import utils
 import tf_easy_dir
@@ -29,19 +29,11 @@ FLAGS = flags.FLAGS
 
 def main(argv=None):
 
-    # print flags
+    if not FLAGS.save_name:
+        FLAGS.save_name = os.path.join('c3dSave', utils.get_date_str())
 
-    print '*'*20 + 'Hyper Parameters' + '*'*20
-    print 'batch_size:\t{:d}'.format(FLAGS.batch_size)
-    print 'max_steps:\t{:d}'.format(FLAGS.max_steps)
-    print 'init_lr:\t{:.6f}'.format(FLAGS.init_lr)
-    print 'lr_decay_rate:\t{:.6f}'.format(FLAGS.lr_decay_rate)
-    print 'num_epoch_per_decay:\t{:.6f}'.format(FLAGS.num_epoch_per_decay)
-    print 'weight_decay_conv:\t{:.6f}'.format(FLAGS.weight_decay_conv)
-    print 'weight_decay_fc:\t{:.6f}'.format(FLAGS.weight_decay_fc)
-    print 'dropout:\t{:.6f}'.format(FLAGS.dropout)
-
-    print '*'*40
+    # print parameters
+    tf_utils.print_gflags(FLAGS=FLAGS)
 
     NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = len(glob.glob(os.path.join(FLAGS.data_dir, '*.{:s}'.format(input_reader.TF_FORMAT))))
     if NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN < 1:
@@ -54,11 +46,7 @@ def main(argv=None):
 
     lr_decay_every_n_step = int(steps_per_epoch * FLAGS.num_epoch_per_decay)
 
-    if not FLAGS.save_name:
-        save_dir = os.path.join('c3dSave', utils.get_date_str())
-    else:
-        save_dir = os.path.join('c3dSave', FLAGS.save_name)
-
+    save_dir = os.path.join('c3dSave', FLAGS.save_name)
     save_locations = tf_easy_dir.tf_easy_dir(save_dir=save_dir)
 
     if FLAGS.rewrite:
