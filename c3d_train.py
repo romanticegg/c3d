@@ -31,6 +31,8 @@ def main(argv=None):
 
     if not FLAGS.save_name:
         FLAGS.save_name = os.path.join('c3dSave', utils.get_date_str())
+    else:
+        FLAGS.save_name = os.path.join('c3dSave', FLAGS.save_name)
 
     # print parameters
     tf_utils.print_gflags(FLAGS=FLAGS)
@@ -46,8 +48,8 @@ def main(argv=None):
 
     lr_decay_every_n_step = int(steps_per_epoch * FLAGS.num_epoch_per_decay)
 
-    save_dir = os.path.join('c3dSave', FLAGS.save_name)
-    save_locations = tf_easy_dir.tf_easy_dir(save_dir=save_dir)
+    # save_dir = FLAGS.save_name
+    save_locations = tf_easy_dir.tf_easy_dir(save_dir=FLAGS.save_name)
 
     if FLAGS.rewrite:
         save_locations.clear_save_name()
