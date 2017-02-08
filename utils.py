@@ -1,6 +1,7 @@
 from datetime import datetime
 import os
 import shutil
+import sys
 
 
 def get_date_str():
@@ -37,3 +38,9 @@ def clear_dir(directory):
                 shutil.rmtree(path)
         except Exception as e:
             print(e)
+
+
+# add path to search paths
+def add_path(path):
+    if path not in sys.path:
+        sys.path.insert(0, path)

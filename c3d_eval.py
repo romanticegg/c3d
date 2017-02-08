@@ -1,7 +1,6 @@
 import tensorflow as tf
-import c3d_model_simple as c3d_model
-# import tf_easy_dir
-# import utils
+import c3d_model_ranking_fix_upper as c3d_model
+
 import tf_utils
 import c3d_input_ucf101_eval as c3d_inputs
 import os
@@ -13,13 +12,16 @@ import glob
 flags = tf.app.flags
 flags.DEFINE_string('data_dir', '/Users/zijwei/Dev/datasets/cifar10-batch', 'directory to save training data[/Users/zijwei/Dev/datasets]')
 flags.DEFINE_string('model', None, 'the model to evaluate on')
-flags.DEFINE_integer('batch_size', 1, 'batch size[1]')
+flags.DEFINE_integer('batch_size', 12, 'batch size[1]')
 flags.DEFINE_integer('gpu_id', None, 'GPU ID [None]')
 tf.app.flags.DEFINE_boolean('use_fp16', False,
                             """Train the model using fp16[False].""")
 flags.DEFINE_float('init_lr', 0.1, 'initial learning rate[0.05]')
-flags.DEFINE_float('weight_decay_conv', 0.0, 'weight decay for convolutional layers [0.0]')
-flags.DEFINE_float('weight_decay_fc', 0.004, 'weight decay for fully connected (fully convoluted) layers [0.004]')
+flags.DEFINE_float('lr_decay_rate', 0.5, 'Decay learning rate by [0.5]')
+flags.DEFINE_integer('num_epoch_per_decay', 4, 'decay of learning rate every [4] epoches')
+flags.DEFINE_float('weight_decay_conv', 0.0005, 'weight decay for convolutional layers [0.0005]')
+flags.DEFINE_float('weight_decay_fc', 0.0005, 'weight decay for fully connected (fully convoluted) layers [0.0005]')
+flags.DEFINE_float('dropout', 0.5, 'dropuout ratio[0.5]')
 FLAGS = flags.FLAGS
 
 
