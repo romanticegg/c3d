@@ -1,5 +1,5 @@
 import tensorflow as tf
-import c3d_model_ranking_d as c3d_model
+import c3d_model_simple as c3d_model
 
 import tf_utils
 import c3d_input_ucf101_eval as c3d_inputs
