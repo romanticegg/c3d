@@ -11,3 +11,8 @@ If you compare the Video acc and table acc in Table 2 of paper [], you will find
 ## From the Fig 4 some observations:
 1. The larger spatial and temporal the better
 2. For some classes it is not a good idea to use all...
+
+
+## Compare to others' work
+1. Compare to ECCV2016, arbitary length of video can be used
+2. Compare to Fully Convolution Layer (Conv --to replace max-pooling) more spatial variances

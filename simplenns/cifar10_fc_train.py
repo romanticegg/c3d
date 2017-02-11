@@ -1,5 +1,5 @@
 import tensorflow as tf
-import cifar10_fc_v4 as cifar10_model
+import cifar10_baseline as cifar10_model
 import tf_easy_dir
 import utils
 import tf_utils_inner
@@ -51,7 +51,6 @@ def train():
             summary_writer = tf.summary.FileWriter(logdir=save_locations.summary_save_dir, graph=sess.graph)
 
             coord = tf.train.Coordinator()
-
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
             for i in range(FLAGS.max_steps):
                 _, loss_, correct_ones_ = sess.run([train_op, loss, correct_ones])
@@ -61,7 +60,7 @@ def train():
                 # if (i+1) % 10 == 0:
                 print '[{:s} -- {:08d}|{:08d}]\tloss : {:.3f}\t, correct ones [{:d}|{:d}]'.format(save_dir, i, FLAGS.max_steps,
                                                                                           loss_, correct_ones_, FLAGS.batch_size)
-                if (i+1 % 100) ==0:
+                if (i+1 % 100) == 0:
                     summary_ = sess.run(summary_op)
                     summary_writer.add_summary(summary_, global_step=global_step)
 
