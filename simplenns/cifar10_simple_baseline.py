@@ -113,7 +113,7 @@ def train(total_loss, global_step, decay_every_n_step=None):
     #      tf.summary.scalar('{:s}(mv)'.format(s_loss.op.name), loss_averages.average(s_loss))
 
     # with tf.control_dependencies([loss_averages_op]): # note this should be a list even if it is only one element
-    train_op =tf.train.AdamOptimizer(learning_rate=lr).minimize(total_loss)
+    train_op =tf.train.AdamOptimizer(learning_rate=lr).minimize(total_loss, global_step=global_step)
     #     #todo: check the grads [grad, var]
     #     grads = opt.compute_gradients(total_loss)
 

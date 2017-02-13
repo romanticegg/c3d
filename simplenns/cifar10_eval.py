@@ -1,5 +1,5 @@
 import tensorflow as tf
-import cifar10_baseline as cifar10_model
+# import cifar10_baseline as cifar10_model
 import tf_easy_dir
 import utils
 import tf_utils_inner
@@ -8,20 +8,25 @@ import os
 import numpy as np
 import math
 import progressbar
+import importlib
+
 
 flags = tf.app.flags
 flags.DEFINE_string('data_dir', '/Users/zijwei/Dev/datasets/cifar10-batch', 'directory to save training data[/Users/zijwei/Dev/datasets]')
 flags.DEFINE_string('model', None, 'the model to evaluate on')
 flags.DEFINE_integer('batch_size', 50, 'batch size[50]')
 flags.DEFINE_integer('gpu_id', None, 'GPU ID [None]')
-tf.app.flags.DEFINE_boolean('use_fp16', False,
+flags.DEFINE_boolean('use_fp16', False,
                             """Train the model using fp16[False].""")
+flags.DEFINE_string('architecture', 'cifar10_simple_baseline', 'version of model to use')
+
 FLAGS = flags.FLAGS
 
 
 #todo: add multiple GPU execution
 
 def eval():
+    cifar10_model = importlib.import_module(FLAGS.architecture)
 
     with tf.Graph().as_default() as graph:
         [batch_images, batch_labels] = cifar10_inputs.inputs(FLAGS.data_dir, FLAGS.batch_size, isTraining=False, isRandom=False)
