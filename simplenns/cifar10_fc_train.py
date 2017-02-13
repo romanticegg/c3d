@@ -1,11 +1,12 @@
 import tensorflow as tf
-import cifar10_baseline as cifar10_model
 import tf_easy_dir
 import utils
 import tf_utils_inner
 import cifar10_inputs
 import os
 import numpy as np
+import importlib
+
 
 flags = tf.app.flags
 flags.DEFINE_string('data_dir', '/Users/zijwei/Dev/datasets/cifar10-batch', 'directory to save training data[/Users/zijwei/Dev/datasets]')
@@ -14,16 +15,20 @@ flags.DEFINE_integer('batch_size', 128, 'batch size[128]')
 flags.DEFINE_boolean('rewrite', False, 'If rewrite training logs to save_name[False]')
 flags.DEFINE_integer('max_steps', 5000, 'Number of training steps[5000]')
 flags.DEFINE_integer('gpu_id', None, 'GPU ID [None]')
-tf.app.flags.DEFINE_boolean('use_fp16', False,
+flags.DEFINE_boolean('use_fp16', False,
                             """Train the model using fp16[False].""")
+flags.DEFINE_string('architecture', 'cifar10_simple_baseline', 'version of model to use')
 FLAGS = flags.FLAGS
 
 
 #todo: add multiple GPU execution
 
 def train():
+    # import cifar10_simple_baseline as cifar10_model
+
+    cifar10_model = importlib.import_module(FLAGS.architecture)
     if not FLAGS.save_name:
-        save_dir = os.path.join('Save', utils.get_date_str())
+        save_dir = os.path.join('Save', utils.get_date_str()+FLAGS.architecture)
     else:
         save_dir = os.path.join('Save', FLAGS.save_name)
 

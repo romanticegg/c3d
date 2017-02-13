@@ -149,7 +149,7 @@ def inference(images, isTraining=True):
         # norm2_shape = norm2.get_shape().as_list()
         weights = variable_with_weight_decay('weights', shape=[8, 8, 64, 384],
                                              initializer=tf.truncated_normal_initializer(stddev=0.04),
-                                             wd=0.004)
+                                             wd=0.0004)
         conv = tf.nn.conv2d(pool2, weights,[1, 1, 1, 1], padding='VALID')
         # biases = variable_on_cpu('biases', [384], tf.constant_initializer(0.0))
         conv_bn = bn(conv, isTraining=isTraining, id_string='1')
@@ -165,7 +165,7 @@ def inference(images, isTraining=True):
     # local4
     with tf.variable_scope('conv4') as scope:
         weights = variable_with_weight_decay('weights', shape=[1, 1, 384, 192],
-                                             initializer=tf.truncated_normal_initializer(stddev=0.04), wd=0.004)
+                                             initializer=tf.truncated_normal_initializer(stddev=0.04), wd=0.0004)
         conv = tf.nn.conv2d(conv3, weights,[1, 1, 1, 1], padding='VALID')
         biases = variable_on_cpu('biases', [192], tf.constant_initializer(0.0))
         pre_activation = tf.nn.bias_add(conv, biases)
@@ -227,7 +227,7 @@ def loss_moving_averages(total_loss):
 # Constants describing the training process.
 MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
 NUM_EPOCHS_PER_DECAY = 350.0      # Epochs after which learning rate decays.
-LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
+LEARNING_RATE_DECAY_FACTOR = 0.8  # Learning rate decay factor.
 INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
 
 
