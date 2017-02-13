@@ -39,11 +39,11 @@ def eval():
         correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
 
 
-        variable_averages = tf.train.ExponentialMovingAverage(
-            cifar10_model.MOVING_AVERAGE_DECAY)
-        variables_to_restore = variable_averages.variables_to_restore()
-        saver = tf.train.Saver(variables_to_restore)
-        # saver = tf.train.Saver()
+        # variable_averages = tf.train.ExponentialMovingAverage(
+        #     cifar10_model.MOVING_AVERAGE_DECAY)
+        # variables_to_restore = variable_averages.variables_to_restore()
+        #saver = tf.train.Saver(variables_to_restore)
+        saver = tf.train.Saver()
 
         config = tf_utils_inner.gpu_config(FLAGS.gpu_id)
         with tf.Session(config=config) as sess:
