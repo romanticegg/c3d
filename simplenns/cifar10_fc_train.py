@@ -39,7 +39,7 @@ def train():
         print '-'*32
         logits = cifar10_model.inference(batch_images)
         loss =cifar10_model.loss(logits=logits, labels=batch_labels)
-        train_op = cifar10_model.train(loss, global_step)
+        train_op, lr = cifar10_model.train(loss, global_step)
         correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
 
         saver = tf.train.Saver(max_to_keep=None)
@@ -53,13 +53,13 @@ def train():
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
             for i in range(FLAGS.max_steps):
-                _, loss_, correct_ones_ = sess.run([train_op, loss, correct_ones])
+                _, loss_, correct_ones_, lr_ = sess.run([train_op, loss, correct_ones, lr])
 
                 assert not np.isnan(loss_), 'Model diverged with loss = NaN, try again'
 
                 # if (i+1) % 10 == 0:
-                print '[{:s} -- {:08d}|{:08d}]\tloss : {:.3f}\t, correct ones [{:d}|{:d}]'.format(save_dir, i, FLAGS.max_steps,
-                                                                                          loss_, correct_ones_, FLAGS.batch_size)
+                print '[{:s} -- {:08d}|{:08d}]\tloss : {:.3f}\t, l-rate: {:.6f}\tcorrect ones [{:d}|{:d}]'.format(save_dir, i, FLAGS.max_steps,
+                                                                                          loss_, lr_, correct_ones_, FLAGS.batch_size)
                 if (i+1 % 100) == 0:
                     summary_ = sess.run(summary_op)
                     summary_writer.add_summary(summary_, global_step=global_step)
