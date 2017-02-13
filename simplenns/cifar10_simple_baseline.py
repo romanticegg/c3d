@@ -97,6 +97,8 @@ def train(total_loss, global_step, decay_every_n_step=None):
         num_batches_per_epoch = inputs.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN / FLAGS.batch_size
         decay_every_n_step = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
 
+    print 'Decay every {:d} steps'.format(decay_every_n_step)
+    sys.stdout.flush()
     lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE, global_step=global_step,
                                     decay_steps=decay_every_n_step, decay_rate=LEARNING_RATE_DECAY_FACTOR)
     tf.summary.scalar('learning_rate', lr)
