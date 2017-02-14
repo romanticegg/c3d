@@ -17,7 +17,7 @@ FLAGS=tf.app.flags.FLAGS
 def batch_norm_decorator(isTraining=True):
     # return tf.nn.relu(batch_norm_func)
     def warpper(x):
-        return tf.nn.relu(tcl.batch_norm(x, center=True, scale=True, is_training=isTraining))
+        return tf.nn.relu(tcl.batch_norm(x, center=True, scale=True, is_training=isTraining, updates_collections=None))
     return warpper
 
 # def relu_batch_norm(x):

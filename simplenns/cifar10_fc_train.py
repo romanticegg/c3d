@@ -51,12 +51,12 @@ def train():
         loss =cifar10_model.loss(logits=logits, labels=batch_labels)
         train_op, lr = cifar10_model.train(loss, global_step)
         # update_ops = tf.group(tf.get_collection(tf.GraphKeys.UPDATE_OPS))
-        with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-            update_ops = tf.no_op()
+        # with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
+        #     update_ops = tf.no_op()
 
         correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
 
-        # debug:
+        # # debug:
         # with tf.variable_scope("", reuse=True):
         #     moving_mean1 = tf.get_variable('inference/Conv/BatchNorm/moving_mean')
         #     moving_variance1 = tf.get_variable('inference/Conv/BatchNorm/moving_variance')
@@ -73,7 +73,7 @@ def train():
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
             for i in range(FLAGS.max_steps):
-                _, _,loss_, correct_ones_, lr_ = sess.run([train_op, update_ops,loss, correct_ones, lr])
+                _, loss_, correct_ones_, lr_ = sess.run([train_op, loss, correct_ones, lr])
 
                 assert not np.isnan(loss_), 'Model diverged with loss = NaN, try again'
 

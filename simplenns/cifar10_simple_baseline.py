@@ -19,11 +19,11 @@ FLAGS=tf.app.flags.FLAGS
 def batch_norm_decorator(isTraining=True):
     # return tf.nn.relu(batch_norm_func)
     def warpper(x):
-        return tf.nn.relu(tcl.batch_norm(x, decay=0.9, center=True, scale=True, is_training=isTraining))
+        # note: all the settings here are important
+        return tf.nn.relu(tcl.batch_norm(x, decay=0.9, center=True, scale=True, is_training=isTraining, updates_collections=None))
     return warpper
 
-# def relu_batch_norm(x):
-#     return tf.nn.relu(tcl.batch_norm(x))
+
 
 #update: batch normalization added, so the training and validataion should differ
 def inference(images, isTraining=True):
