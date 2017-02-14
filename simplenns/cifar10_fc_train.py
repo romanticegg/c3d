@@ -18,6 +18,8 @@ flags.DEFINE_integer('gpu_id', None, 'GPU ID [None]')
 flags.DEFINE_boolean('use_fp16', False,
                             """Train the model using fp16[False].""")
 flags.DEFINE_string('architecture', 'cifar10_simple_baseline', 'version of model to use')
+flags.DEFINE_float('lr', 0.1, 'learning_rate[0.1]')
+flags.DEFINE_integer('epochs_per_decay', 10, 'number of epochs per decay [10]')
 FLAGS = flags.FLAGS
 
 

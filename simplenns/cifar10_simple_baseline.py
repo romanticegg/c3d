@@ -66,9 +66,9 @@ def correct_ones(logits, labels, k=1):
 
 # Constants describing the training process.
 MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
-NUM_EPOCHS_PER_DECAY = 1     # Epochs after which learning rate decays.
+# NUM_EPOCHS_PER_DECAY = 1     # Epochs after which learning rate decays.
 LEARNING_RATE_DECAY_FACTOR = 0.9  # Learning rate decay factor.
-INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
+# INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
 WEIGHT_DECAY = 0.0005
 
 def loss(logits, labels, isFinalLossOnly=False):
@@ -95,11 +95,11 @@ def loss(logits, labels, isFinalLossOnly=False):
 def train(total_loss, global_step, decay_every_n_step=None):
     if not decay_every_n_step:
         num_batches_per_epoch = inputs.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN / FLAGS.batch_size
-        decay_every_n_step = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
+        decay_every_n_step = int(num_batches_per_epoch * FLAGS.epochs_per_decay)
 
     print 'Decay every {:d} steps'.format(decay_every_n_step)
     sys.stdout.flush()
-    lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE, global_step=global_step,
+    lr = tf.train.exponential_decay(FLAGS.lr, global_step=global_step,
                                     decay_steps=decay_every_n_step, decay_rate=LEARNING_RATE_DECAY_FACTOR)
     tf.summary.scalar('learning_rate', lr)
 
