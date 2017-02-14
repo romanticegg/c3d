@@ -51,7 +51,7 @@ def train():
         train_op, lr = cifar10_model.train(loss, global_step)
         # update_ops = tf.group(tf.get_collection(tf.GraphKeys.UPDATE_OPS))
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-            train_op = tf.identity(train_op)
+            update_ops = tf.no_op()
 
         correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
 
