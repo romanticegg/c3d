@@ -69,7 +69,7 @@ MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
 # NUM_EPOCHS_PER_DECAY = 1     # Epochs after which learning rate decays.
 LEARNING_RATE_DECAY_FACTOR = 0.9  # Learning rate decay factor.
 # INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
-WEIGHT_DECAY = 0.0005
+WEIGHT_DECAY = 0.004
 
 def loss(logits, labels, isFinalLossOnly=False):
     labels=tf.cast(labels, tf.int64)
@@ -80,7 +80,6 @@ def loss(logits, labels, isFinalLossOnly=False):
         tcl.l2_regularizer(WEIGHT_DECAY),
         weights_list=[var for var in tf.get_collection('loss') if 'weights' in var.name]
     )
-
 
     return cross_entropy_mean + reg
 

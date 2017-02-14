@@ -6,7 +6,7 @@ import cifar10_inputs
 import os
 import numpy as np
 import importlib
-
+import sys
 
 flags = tf.app.flags
 flags.DEFINE_string('data_dir', '/Users/zijwei/Dev/datasets/cifar10-batch', 'directory to save training data[/Users/zijwei/Dev/datasets]')
@@ -44,6 +44,7 @@ def train():
         print 'size of image input: [{:s}]'.format(', '.join(map(str, batch_images.get_shape().as_list())))
         print 'size of labels : [{:s}]'.format(', '.join(map(str, batch_labels.get_shape().as_list())))
         print '-'*32
+        sys.stdout.flush()
         logits = cifar10_model.inference(batch_images)
         loss =cifar10_model.loss(logits=logits, labels=batch_labels)
         train_op, lr = cifar10_model.train(loss, global_step)
@@ -67,6 +68,7 @@ def train():
                 # if (i+1) % 10 == 0:
                 print '[{:s} -- {:08d}|{:08d}]\tloss : {:.3f}\t, l-rate: {:.6f}\tcorrect ones [{:d}|{:d}]'.format(save_dir, i, FLAGS.max_steps,
                                                                                           loss_, lr_, correct_ones_, FLAGS.batch_size)
+                sys.stdout.flush()
                 if (i+1 % 100) == 0:
                     summary_ = sess.run(summary_op)
                     summary_writer.add_summary(summary_, global_step=global_step)
