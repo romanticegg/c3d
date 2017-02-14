@@ -19,7 +19,7 @@ flags.DEFINE_integer('gpu_id', None, 'GPU ID [None]')
 flags.DEFINE_boolean('use_fp16', False,
                             """Train the model using fp16[False].""")
 flags.DEFINE_string('architecture', 'cifar10_simple_baseline', 'version of model to use')
-
+flags.DEFINE_boolean('debug_isTraining', False, 'debug position[false]')
 FLAGS = flags.FLAGS
 
 
@@ -27,7 +27,7 @@ FLAGS = flags.FLAGS
 
 def eval():
     cifar10_model = importlib.import_module(FLAGS.architecture)
-
+    
     with tf.Graph().as_default() as graph:
         [batch_images, batch_labels] = cifar10_inputs.inputs(FLAGS.data_dir, FLAGS.batch_size, isTraining=False, isRandom=False )
 
@@ -35,7 +35,7 @@ def eval():
         print 'size of labels : [{:s}]'.format(', '.join(map(str, batch_labels.get_shape().as_list())))
         print '-'*32
 
-        logits = cifar10_model.inference(batch_images, isTraining=False)
+        logits = cifar10_model.inference(batch_images, isTraining=FLAGS.debug_isTraining)
         correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
 
 
