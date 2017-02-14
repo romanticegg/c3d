@@ -49,7 +49,10 @@ def train():
         logits = cifar10_model.inference(batch_images, isTraining=True)
         loss =cifar10_model.loss(logits=logits, labels=batch_labels)
         train_op, lr = cifar10_model.train(loss, global_step)
-        update_ops = tf.group(tf.get_collection(tf.GraphKeys.UPDATE_OPS))
+        # update_ops = tf.group(tf.get_collection(tf.GraphKeys.UPDATE_OPS))
+        with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
+            train_op = tf.identity(train_op)
+
         correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
 
         # debug:
