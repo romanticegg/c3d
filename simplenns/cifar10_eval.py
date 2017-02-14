@@ -52,9 +52,9 @@ def eval():
             saver.restore(sess=sess,save_path=FLAGS.model)
             nbatches = int(math.ceil(cifar10_inputs.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL*1.0/FLAGS.batch_size))
             #debug:
-            with tf.variable_scope("", reuse=True):
-                moving_mean1 = tf.get_variable('inference/Conv/BatchNorm/moving_mean')
-                moving_variance1 = tf.get_variable('inference/Conv/BatchNorm/moving_variance')
+            # with tf.variable_scope("", reuse=True):
+            #     moving_mean1 = tf.get_variable('inference/Conv/BatchNorm/moving_mean')
+            #     moving_variance1 = tf.get_variable('inference/Conv/BatchNorm/moving_variance')
 
             #todo: remember the pattern
             coord = tf.train.Coordinator()
