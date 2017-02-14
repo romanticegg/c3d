@@ -49,6 +49,7 @@ def train():
         logits = cifar10_model.inference(batch_images, isTraining=True)
         loss =cifar10_model.loss(logits=logits, labels=batch_labels)
         train_op, lr = cifar10_model.train(loss, global_step)
+        update_ops = tf.group(tf.get_collection(tf.GraphKeys.UPDATE_OPS))
         correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
 
         # debug:
@@ -68,7 +69,7 @@ def train():
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
             for i in range(FLAGS.max_steps):
-                _, loss_, correct_ones_, lr_ = sess.run([train_op, loss, correct_ones, lr])
+                _, _,loss_, correct_ones_, lr_ = sess.run([train_op, update_ops,loss, correct_ones, lr])
 
                 assert not np.isnan(loss_), 'Model diverged with loss = NaN, try again'
 
