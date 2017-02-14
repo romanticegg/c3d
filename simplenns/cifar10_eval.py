@@ -35,7 +35,7 @@ def eval():
         print 'size of labels : [{:s}]'.format(', '.join(map(str, batch_labels.get_shape().as_list())))
         print '-'*32
 
-        logits = cifar10_model.inference(batch_images, isTraining=True)
+        logits = cifar10_model.inference(batch_images, isTraining=False)
         correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
 
 
