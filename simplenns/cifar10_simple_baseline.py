@@ -42,7 +42,7 @@ def inference(images, isTraining=True):
                            strides=[1, 2, 2, 1], padding='SAME', name='pool2')
 
         conv3 = tcl.conv2d(pool2, 384, [8, 8], stride=1, padding='VALID', activation_fn=batch_norm_decorator(isTraining=isTraining),variables_collections=['loss'])
-        conv4 = tcl.conv2d(conv3, 192, [1, 1], stride=1, padding='VALID', activation_fn=tf.nn.relu, variables_collections=['loss'])
+        conv4 = tcl.conv2d(conv3, 192, [1, 1], stride=1, padding='VALID', activation_fn=batch_norm_decorator(isTraining=isTraining), variables_collections=['loss'])
 
         final = tcl.conv2d(conv4, NUM_CLASSES, [1, 1], stride=1, padding='VALID', activation_fn=tf.identity)
 
@@ -69,7 +69,7 @@ def correct_ones(logits, labels, k=1):
 # NUM_EPOCHS_PER_DECAY = 1     # Epochs after which learning rate decays.
 LEARNING_RATE_DECAY_FACTOR = 0.9  # Learning rate decay factor.
 # INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
-WEIGHT_DECAY = 0.004
+# WEIGHT_DECAY = 0.0005
 
 def loss(logits, labels, isFinalLossOnly=False):
     labels=tf.cast(labels, tf.int64)
@@ -77,7 +77,7 @@ def loss(logits, labels, isFinalLossOnly=False):
     cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy')
 
     reg = tcl.apply_regularization(
-        tcl.l2_regularizer(WEIGHT_DECAY),
+        tcl.l2_regularizer(FLAGS.layer_weight_decay),
         weights_list=[var for var in tf.get_collection('loss') if 'weights' in var.name]
     )
 

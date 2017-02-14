@@ -20,6 +20,7 @@ flags.DEFINE_boolean('use_fp16', False,
 flags.DEFINE_string('architecture', 'cifar10_simple_baseline', 'version of model to use')
 flags.DEFINE_float('lr', 0.1, 'learning_rate[0.1]')
 flags.DEFINE_integer('epochs_per_decay', 10, 'number of epochs per decay [10]')
+flags.DEFINE_float('layer_weight_decay', 0.0005, 'weight decay for later layers')
 FLAGS = flags.FLAGS
 
 
@@ -56,9 +57,9 @@ def train():
         correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
 
         # debug:
-        with tf.variable_scope("", reuse=True):
-            moving_mean1 = tf.get_variable('inference/Conv/BatchNorm/moving_mean')
-            moving_variance1 = tf.get_variable('inference/Conv/BatchNorm/moving_variance')
+        # with tf.variable_scope("", reuse=True):
+        #     moving_mean1 = tf.get_variable('inference/Conv/BatchNorm/moving_mean')
+        #     moving_variance1 = tf.get_variable('inference/Conv/BatchNorm/moving_variance')
 
 
         saver = tf.train.Saver(max_to_keep=None)
@@ -81,8 +82,8 @@ def train():
                                                                                           loss_, lr_, correct_ones_, FLAGS.batch_size)
                 sys.stdout.flush()
 
-                mm1, mv1 = sess.run([moving_mean1, moving_variance1])
-                print 'Sum of moving mean: {:.6f} \t, moving variance: {:.06f}'.format(np.sum(mm1), np.sum(mv1))
+                # mm1, mv1 = sess.run([moving_mean1, moving_variance1])
+                # print 'Sum of moving mean: {:.6f} \t, moving variance: {:.06f}'.format(np.sum(mm1), np.sum(mv1))
 
                 if (i+1 % 100) == 0:
                     summary_ = sess.run(summary_op)
