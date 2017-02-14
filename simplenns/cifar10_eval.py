@@ -48,8 +48,13 @@ def eval():
         config = tf_utils_inner.gpu_config(FLAGS.gpu_id)
         with tf.Session(config=config) as sess:
             # sess.run(tf.variables_initializer(tf.global_variables()))
+
             saver.restore(sess=sess,save_path=FLAGS.model)
             nbatches = int(math.ceil(cifar10_inputs.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL*1.0/FLAGS.batch_size))
+            #debug:
+            with tf.variable_scope("", reuse=True):
+                moving_mean1 = tf.get_variable('inference/Conv/BatchNorm/moving_mean')
+                moving_variance1 = tf.get_variable('inference/Conv/BatchNorm/moving_variance')
 
             #todo: remember the pattern
             coord = tf.train.Coordinator()

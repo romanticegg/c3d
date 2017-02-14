@@ -45,10 +45,17 @@ def train():
         print 'size of labels : [{:s}]'.format(', '.join(map(str, batch_labels.get_shape().as_list())))
         print '-'*32
         sys.stdout.flush()
-        logits = cifar10_model.inference(batch_images)
+
+        logits = cifar10_model.inference(batch_images, isTraining=True)
         loss =cifar10_model.loss(logits=logits, labels=batch_labels)
         train_op, lr = cifar10_model.train(loss, global_step)
         correct_ones = cifar10_model.correct_ones(logits=logits, labels=batch_labels)
+
+        # debug:
+        with tf.variable_scope("", reuse=True):
+            moving_mean1 = tf.get_variable('inference/Conv/BatchNorm/moving_mean')
+            moving_variance1 = tf.get_variable('inference/Conv/BatchNorm/moving_variance')
+
 
         saver = tf.train.Saver(max_to_keep=None)
         summary_op = tf.summary.merge_all()
@@ -69,6 +76,11 @@ def train():
                 print '[{:s} -- {:08d}|{:08d}]\tloss : {:.3f}\t, l-rate: {:.6f}\tcorrect ones [{:d}|{:d}]'.format(save_dir, i, FLAGS.max_steps,
                                                                                           loss_, lr_, correct_ones_, FLAGS.batch_size)
                 sys.stdout.flush()
+
+                mm1, mv1 = sess.run([moving_mean1, moving_variance1])
+                print 'Sum of moving mean: {:.6f} \t, moving variance: {:.06f}'.format(mm1, mv1)
+                
+
                 if (i+1 % 100) == 0:
                     summary_ = sess.run(summary_op)
                     summary_writer.add_summary(summary_, global_step=global_step)
