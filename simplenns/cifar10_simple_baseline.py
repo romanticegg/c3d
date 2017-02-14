@@ -44,7 +44,7 @@ def inference(images, isTraining=True):
         conv3 = tcl.conv2d(pool2, 384, [8, 8], stride=1, padding='VALID', activation_fn=batch_norm_decorator(isTraining=isTraining),variables_collections=['loss'])
         conv4 = tcl.conv2d(conv3, 192, [1, 1], stride=1, padding='VALID', activation_fn=tf.nn.relu, variables_collections=['loss'])
 
-        final = tcl.conv2d(conv4, NUM_CLASSES, [1, 1], stride=1, padding='VALID', activation_fn=tf.identity, variables_collections=['loss'])
+        final = tcl.conv2d(conv4, NUM_CLASSES, [1, 1], stride=1, padding='VALID', activation_fn=tf.identity)
 
         softmax = tf.reduce_mean(final, axis=1, keep_dims=True)
         softmax = tf.reduce_mean(softmax, axis=2, keep_dims=True)

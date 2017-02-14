@@ -46,10 +46,10 @@ def inputs(data_dir, batch_size, isTraining=True, isRandom=False):
 
     if isTraining:
         filenames = [os.path.join(data_dir, 'data_batch_{:d}.bin'.format(i)) for i in xrange(1,6)]
-        num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
+        # num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
     else:
         filenames = [os.path.join(data_dir, 'test_batch.bin')]
-        num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
+        # num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
 
     for f in filenames:
         if not tf.gfile.Exists(f):
