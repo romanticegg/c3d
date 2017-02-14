@@ -78,8 +78,7 @@ def train():
                 sys.stdout.flush()
 
                 mm1, mv1 = sess.run([moving_mean1, moving_variance1])
-                print 'Sum of moving mean: {:.6f} \t, moving variance: {:.06f}'.format(mm1, mv1)
-                
+                print 'Sum of moving mean: {:.6f} \t, moving variance: {:.06f}'.format(np.sum(mm1), np.sum(mv1))
 
                 if (i+1 % 100) == 0:
                     summary_ = sess.run(summary_op)
